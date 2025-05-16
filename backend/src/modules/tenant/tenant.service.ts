@@ -1,9 +1,10 @@
 // tenant.service.ts
-import { Injectable } from '@nestjs/common';
+import { Injectable, NotFoundException } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
 import { Repository, DataSource } from 'typeorm';
 import { Tenant } from './entities/tenant.entity';
 import { CreateTenantDto } from './dto/create-tenant.dto';
+import { UpdateTenantDto } from './dto/update-tenant.dto';
 
 @Injectable()
 export class TenantService {
@@ -57,6 +58,26 @@ export class TenantService {
       // Xóa tenant từ database
       await this.tenantRepository.delete(id);
     }
+  }
+
+  async update(id: number, updateTenantDto: UpdateTenantDto): Promise<Tenant> {
+    const tenant = await this.findOne(id);
+    if (!tenant) {
+      throw new NotFoundException(`Tenant with ID ${id} not found`);
+    }
+
+    // Update các trường có thể thay đổi
+    if (updateTenantDto.name) {
+      tenant.name = updateTenantDto.name;
+    }
+    if (updateTenantDto.domain) {
+      tenant.domain = updateTenantDto.domain;
+    }
+    if (updateTenantDto.package_id) {
+      tenant.package_id = updateTenantDto.package_id;
+    }
+
+    return this.tenantRepository.save(tenant);
   }
 
   private async createTenantSchema(schemaName: string): Promise<void> {

@@ -4,6 +4,8 @@ import { TypeOrmModule } from '@nestjs/typeorm';
 import { AppController } from './app.controller';
 import { AppService } from './app.service';
 import { TenantModule } from './modules/tenant/tenant.module';
+import { PackageModule } from './modules/packages/package.module';
+import { ModuleModule } from './modules/modules/module.module';
 import { MongoDBModule } from './modules/mongodb/mongodb.module';
 import { RedisModule } from './modules/redis/redis.module';
 import { TenantSchemaMiddleware } from './modules/tenant/middleware/tenant-schema.middleware';
@@ -38,6 +40,8 @@ import redisConfig from './config/redis.config';
       }),
     }),
     TenantModule,
+    PackageModule,
+    ModuleModule,
     MongoDBModule,
     RedisModule,
   ],

@@ -53,7 +53,7 @@
 
 #### 2.5.1 System Level APIs
 - [ ] API quản lý tenant (CRUD)
-- [ ] API quản lý packages (CRUD)
+- [x] API quản lý packages (CRUD)
 - [ ] API quản lý modules (CRUD)
 - [ ] API kích hoạt/vô hiệu hóa module cho tenant
 
