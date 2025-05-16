@@ -1,6 +1,5 @@
 import React, { useState } from 'react';
-import {
-  Box,
+import {  Box,
   List,
   ListItem,
   ListItemButton,
@@ -8,11 +7,9 @@ import {
   ListItemText,
   Collapse,
   Divider,
-  Tooltip,
   Badge,
   alpha,
   styled,
-  useTheme,
   SvgIconProps
 } from '@mui/material';
 import {
@@ -49,13 +46,13 @@ interface NavigationMenuProps {
 }
 
 // Styled components
-const MenuItemButton = styled(ListItemButton)(({ theme }) => ({
-  borderRadius: theme.shape.borderRadius,
-  margin: theme.spacing(0.5, 1),
+const MenuItemButton = styled(ListItemButton)(({ theme: muiTheme }) => ({
+  borderRadius: muiTheme.shape.borderRadius,
+  margin: muiTheme.spacing(0.5, 1),
   '&.Mui-selected': {
-    backgroundColor: alpha(theme.palette.primary.main, 0.12),
+    backgroundColor: alpha(muiTheme.palette.primary.main, 0.12),
     '&:hover': {
-      backgroundColor: alpha(theme.palette.primary.main, 0.16),
+      backgroundColor: alpha(muiTheme.palette.primary.main, 0.16),
     },
   },
 }));
@@ -71,9 +68,8 @@ const NavigationMenu: React.FC<NavigationMenuProps> = ({
   showIcons = true,
   dense = false
 }) => {
-  const theme = useTheme();
-  const location = useLocation();
   const navigate = useNavigate();
+  const location = useLocation();
   
   // State to track open submenu sections
   const [openSections, setOpenSections] = useState<string[]>([]);

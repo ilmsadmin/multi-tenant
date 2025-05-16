@@ -2,9 +2,7 @@ import React, { useState, useEffect } from 'react';
 import {
   Box,
   Typography,
-  Paper,
   FormControl,
-  FormControlLabel,
   InputLabel,
   Select,
   MenuItem,
@@ -20,8 +18,7 @@ import {
   List,
   ListItem,
   ListItemText,
-  ListItemIcon,
-  IconButton
+  ListItemIcon
 } from '@mui/material';
 import {
   Language as LanguageIcon,
@@ -42,7 +39,7 @@ import { UserPreferences } from '../../../types/userAuth.types';
 import { Grid } from '../../../components/shared';
 
 const UserSettings: React.FC = () => {
-  const { user, isLoading } = useAppSelector((state) => state.userAuth);
+  const { isLoading } = useAppSelector((state) => state.userAuth);
   const [loading, setLoading] = useState(false);
   const [snackbar, setSnackbar] = useState({
     open: false,

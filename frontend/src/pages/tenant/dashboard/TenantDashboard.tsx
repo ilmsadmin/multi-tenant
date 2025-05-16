@@ -18,9 +18,8 @@ import { useNavigate } from 'react-router-dom';
 import { useAppSelector } from '../../../hooks/redux';
 import { Grid } from '../../../components/shared';
 
-const TenantDashboard: React.FC = () => {
-  const navigate = useNavigate();
-  const { user, tenantId } = useAppSelector((state) => state.tenantAuth);
+const TenantDashboard: React.FC = () => {  const navigate = useNavigate();
+  const { tenantId } = useAppSelector((state) => state.tenantAuth);
   const [isLoading, setIsLoading] = useState(true);
   const [stats, setStats] = useState({
     totalUsers: 0,

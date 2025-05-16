@@ -1,7 +1,6 @@
 import React from 'react';
 import { Box, Paper, useTheme, useMediaQuery } from '@mui/material';
 import { Outlet } from 'react-router-dom';
-import Grid from '../Grid';
 
 interface SplitLayoutProps {
   leftContent?: React.ReactNode;

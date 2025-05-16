@@ -16,7 +16,6 @@ import {
   Tooltip,
   AppBarProps as MuiAppBarProps,
   useMediaQuery,
-  List,
   ListItemIcon,
   ListItemText
 } from '@mui/material';
@@ -33,12 +32,12 @@ import {
   BarChart as BarChartIcon,
   Inventory as InventoryIcon
 } from '@mui/icons-material';
-import { Outlet, useNavigate, useLocation } from 'react-router-dom';
+import { Outlet, useNavigate } from 'react-router-dom';
 import { useAppDispatch, useAppSelector } from '../hooks/redux';
 import { userLogout } from '../store/slices/userAuthSlice';
 
 // Import our shared components
-import { NavigationMenu, NavigationItem, Grid } from '../components/shared';
+import { NavigationMenu, NavigationItem } from '../components/shared';
 
 const drawerWidth = 240;
 
@@ -76,7 +75,6 @@ const DrawerHeader = styled('div')(({ theme }) => ({
 const UserLayout: React.FC = () => {
   const theme = useTheme();
   const navigate = useNavigate();
-  const location = useLocation();
   const dispatch = useAppDispatch();
   const { user } = useAppSelector((state) => state.userAuth);
   const isMobile = useMediaQuery(theme.breakpoints.down('sm'));
@@ -84,7 +82,7 @@ const UserLayout: React.FC = () => {
   const [open, setOpen] = useState(!isMobile);
   const [anchorEl, setAnchorEl] = useState<null | HTMLElement>(null);
   const [notificationAnchorEl, setNotificationAnchorEl] = useState<null | HTMLElement>(null);
-  const [availableModules, setAvailableModules] = useState([
+  const [availableModules] = useState([
     { id: 'crm', name: 'CRM', icon: <PeopleIcon />, path: '/crm', enabled: true },
     { id: 'hrm', name: 'HRM', icon: <BusinessCenterIcon />, path: '/hrm', enabled: true },
     { id: 'analytics', name: 'Analytics', icon: <BarChartIcon />, path: '/analytics', enabled: true },

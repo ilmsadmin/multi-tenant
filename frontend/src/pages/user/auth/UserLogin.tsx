@@ -2,10 +2,9 @@ import React, { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { useAppDispatch, useAppSelector } from '../../../hooks/redux';
 import { userLogin } from '../../../store/slices/userAuthSlice';
-import { Box, Paper, Typography, TextField, Button, Alert, CircularProgress, Link } from '@mui/material';
+import { Box, Paper, Typography, TextField, Button, Alert, CircularProgress } from '@mui/material';
 import { useFormik } from 'formik';
 import * as Yup from 'yup';
-import { Grid } from '../../../components/shared';
 
 const UserLogin: React.FC = () => {
   const navigate = useNavigate();

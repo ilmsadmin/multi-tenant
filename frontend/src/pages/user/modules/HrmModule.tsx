@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState } from 'react';
 import {
   Box,
   Typography,
@@ -209,7 +209,7 @@ const attendanceData = [
 const HrmModule: React.FC = () => {
   const [tabValue, setTabValue] = useState(0);
   const [employees, setEmployees] = useState(employeesData);
-  const [leaveRequests, setLeaveRequests] = useState(leaveRequestsData);
+  const [leaveRequests] = useState(leaveRequestsData);
   const [searchTerm, setSearchTerm] = useState('');
 
   const handleTabChange = (event: React.SyntheticEvent, newValue: number) => {

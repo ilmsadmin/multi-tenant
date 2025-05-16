@@ -4,12 +4,8 @@ import {
   Typography,
   Breadcrumbs,
   Divider,
-  Paper,
   Link,
-  Button,
   Chip,
-  useTheme,
-  useMediaQuery,
   styled
 } from '@mui/material';
 import { Link as RouterLink } from 'react-router-dom';
@@ -120,14 +116,10 @@ const PageHeader: React.FC<PageHeaderProps> = ({
   divider = false,
   elevated = false,
   backgroundImage,
-  backgroundColor,
-  lightText = false,
+  backgroundColor,  lightText = false,
   fullWidth = false,
   headerStyle = 'default'
 }) => {
-  const theme = useTheme();
-  const isMobile = useMediaQuery(theme.breakpoints.down('sm'));
-  
   return (
     <StyledPageHeader
       elevated={elevated}

@@ -13,8 +13,7 @@ import {
   Snackbar,
   Alert,
   Card,
-  CardContent,
-  IconButton
+  CardContent
 } from '@mui/material';
 import {
   Edit as EditIcon,
@@ -25,9 +24,8 @@ import {
   Email as EmailIcon,
   Phone as PhoneIcon
 } from '@mui/icons-material';
-import { styled } from '@mui/material/styles';
 import { useAppDispatch, useAppSelector } from '../../../hooks/redux';
-import { getUserProfile, updateUserProfile } from '../../../store/slices/userAuthSlice';
+import { updateUserProfile } from '../../../store/slices/userAuthSlice';
 import { userAuthService } from '../../../services/userAuth.service';
 import { Grid } from '../../../components/shared';
 
@@ -121,7 +119,7 @@ const UserProfile: React.FC = () => {
   };  const handleSaveProfile = async () => {
     try {
       // In a real app, dispatch to update profile
-      const result = dispatch(updateUserProfile(formData));
+      dispatch(updateUserProfile(formData));
       setEditMode(false);
       setSnackbar({
         open: true,

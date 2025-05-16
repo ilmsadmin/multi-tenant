@@ -2,7 +2,7 @@ import React, { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { useAppDispatch, useAppSelector } from '../../../hooks/redux';
 import { tenantLogin } from '../../../store/slices/tenantAuthSlice';
-import { Box, Paper, Typography, TextField, Button, Alert, CircularProgress, FormControl, InputLabel, Select, MenuItem } from '@mui/material';
+import { Box, Paper, Typography, TextField, Button, Alert, CircularProgress } from '@mui/material';
 import { useFormik } from 'formik';
 import * as Yup from 'yup';
 

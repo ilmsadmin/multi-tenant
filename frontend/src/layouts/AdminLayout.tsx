@@ -31,7 +31,7 @@ import {
   Logout as LogoutIcon
 } from '@mui/icons-material';
 import { Outlet, useNavigate } from 'react-router-dom';
-import { useAppDispatch, useAppSelector } from '../hooks/redux';
+import { useAppDispatch } from '../hooks/redux';
 import { logout } from '../store/slices/authSlice';
 
 const drawerWidth = 240;
@@ -71,7 +71,6 @@ const AdminLayout: React.FC = () => {
   const theme = useTheme();
   const navigate = useNavigate();
   const dispatch = useAppDispatch();
-  const { user } = useAppSelector((state) => state.auth);
   
   const [open, setOpen] = useState(false);
   const [anchorEl, setAnchorEl] = useState<null | HTMLElement>(null);

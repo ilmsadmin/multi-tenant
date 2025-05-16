@@ -1,5 +1,5 @@
 import React from 'react';
-import { Box, Paper, Container, Divider, useTheme } from '@mui/material';
+import { Box, Paper, Container, Divider } from '@mui/material';
 
 interface PageContainerProps {
   children: React.ReactNode;
@@ -29,11 +29,7 @@ const PageContainer: React.FC<PageContainerProps> = ({
   divider = false,
   fullHeight = false,
   sx = {}
-}) => {
-  const theme = useTheme();
-  
-  // Build the content with or without paper
-  const renderContent = () => {
+}) => {  const renderContent = () => {
     if (paper) {
       return (
         <Paper

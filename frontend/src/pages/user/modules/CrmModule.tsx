@@ -5,7 +5,6 @@ import {
   Paper,
   Card,
   CardContent,
-  CardHeader,
   Button,
   Tabs,
   Tab,
@@ -20,9 +19,7 @@ import {
   TextField,
   InputAdornment,
   Chip,
-  Avatar,
-  CircularProgress,
-  Divider
+  CircularProgress
 } from '@mui/material';
 import {
   Add as AddIcon,
@@ -32,13 +29,11 @@ import {
   Delete as DeleteIcon,
   Phone as PhoneIcon,
   Email as EmailIcon,
-  Business as BusinessIcon,
   People as PeopleIcon,
   Money as MoneyIcon,
   Timeline as TimelineIcon,
   Assignment as AssignmentIcon
 } from '@mui/icons-material';
-import { useAppSelector } from '../../../hooks/redux';
 import { Grid } from '../../../components/shared';
 
 interface TabPanelProps {
@@ -89,7 +84,6 @@ interface Deal {
 }
 
 const CrmModule: React.FC = () => {
-  const { user } = useAppSelector((state) => state.userAuth);
   const [tabValue, setTabValue] = useState(0);
   const [isLoading, setIsLoading] = useState(true);
   const [page, setPage] = useState(0);

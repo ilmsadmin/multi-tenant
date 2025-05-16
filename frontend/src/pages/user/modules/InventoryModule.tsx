@@ -22,16 +22,14 @@ import {
   DialogActions,
   DialogContent,
   DialogContentText,
-  DialogTitle,
-  Menu,
+  DialogTitle,  Menu,
   MenuItem,
   FormControl,
   InputLabel,
   Select,
   SelectChangeEvent,
   LinearProgress,
-  Tooltip,
-  Badge
+  Tooltip
 } from '@mui/material';
 import {
   Search as SearchIcon,
@@ -177,8 +175,8 @@ const purchaseOrders = [
 const InventoryModule: React.FC = () => {
   const [tabValue, setTabValue] = useState(0);
   const [searchTerm, setSearchTerm] = useState('');
-  const [filteredItems, setFilteredItems] = useState(inventoryItems);
-  const [deleteDialogOpen, setDeleteDialogOpen] = useState(false);
+  const [filteredItems, setFilteredItems] = useState(inventoryItems);  const [deleteDialogOpen, setDeleteDialogOpen] = useState(false);
+  // eslint-disable-next-line @typescript-eslint/no-unused-vars
   const [selectedItem, setSelectedItem] = useState<number | null>(null);
   const [anchorEl, setAnchorEl] = useState<null | HTMLElement>(null);
   const [categoryFilter, setCategoryFilter] = useState('all');

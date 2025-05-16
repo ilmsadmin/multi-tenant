@@ -1,5 +1,5 @@
 import React from 'react';
-import { Box, Container, Paper, Toolbar, useTheme, useMediaQuery } from '@mui/material';
+import { Box, Container, Paper, useTheme, useMediaQuery } from '@mui/material';
 import { Outlet } from 'react-router-dom';
 
 interface BasicLayoutProps {
