@@ -1,0 +1,129 @@
+{
+  "info": {
+    "name": "Module API",
+    "description": "Collection for testing the Module Management API",
+    "schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json"
+  },
+  "item": [
+    {
+      "name": "Create Module",
+      "request": {
+        "method": "POST",
+        "header": [
+          {
+            "key": "Content-Type",
+            "value": "application/json"
+          }
+        ],
+        "body": {
+          "mode": "raw",
+          "raw": "{\n    \"name\": \"CRM\",\n    \"description\": \"Customer Relationship Management module\",\n    \"version\": \"1.0.0\"\n}"
+        },
+        "url": {
+          "raw": "{{baseUrl}}/modules",
+          "host": ["{{baseUrl}}"],
+          "path": ["modules"]
+        },
+        "description": "Create a new module"
+      }
+    },
+    {
+      "name": "Get All Modules",
+      "request": {
+        "method": "GET",
+        "header": [],
+        "url": {
+          "raw": "{{baseUrl}}/modules?search=&skip=0&take=10",
+          "host": ["{{baseUrl}}"],
+          "path": ["modules"],
+          "query": [
+            {
+              "key": "search",
+              "value": "",
+              "description": "Search term to filter modules by name"
+            },
+            {
+              "key": "skip",
+              "value": "0",
+              "description": "Number of records to skip (for pagination)"
+            },
+            {
+              "key": "take",
+              "value": "10",
+              "description": "Number of records to take (for pagination)"
+            }
+          ]
+        },
+        "description": "Get all modules with pagination and search"
+      }
+    },
+    {
+      "name": "Get Module by ID",
+      "request": {
+        "method": "GET",
+        "header": [],
+        "url": {
+          "raw": "{{baseUrl}}/modules/1",
+          "host": ["{{baseUrl}}"],
+          "path": ["modules", "1"]
+        },
+        "description": "Get a module by its ID"
+      }
+    },
+    {
+      "name": "Get Module by Name",
+      "request": {
+        "method": "GET",
+        "header": [],
+        "url": {
+          "raw": "{{baseUrl}}/modules/name/CRM",
+          "host": ["{{baseUrl}}"],
+          "path": ["modules", "name", "CRM"]
+        },
+        "description": "Get a module by its name"
+      }
+    },
+    {
+      "name": "Update Module",
+      "request": {
+        "method": "PATCH",
+        "header": [
+          {
+            "key": "Content-Type",
+            "value": "application/json"
+          }
+        ],
+        "body": {
+          "mode": "raw",
+          "raw": "{\n    \"description\": \"Updated description for CRM module\",\n    \"version\": \"1.1.0\"\n}"
+        },
+        "url": {
+          "raw": "{{baseUrl}}/modules/1",
+          "host": ["{{baseUrl}}"],
+          "path": ["modules", "1"]
+        },
+        "description": "Update an existing module"
+      }
+    },
+    {
+      "name": "Delete Module",
+      "request": {
+        "method": "DELETE",
+        "header": [],
+        "url": {
+          "raw": "{{baseUrl}}/modules/1",
+          "host": ["{{baseUrl}}"],
+          "path": ["modules", "1"]
+        },
+        "description": "Delete a module by its ID"
+      }
+    }
+  ],
+  "variable": [
+    {
+      "key": "baseUrl",
+      "value": "http://localhost:3000/api",
+      "type": "string"
+    }
+  ]
+}

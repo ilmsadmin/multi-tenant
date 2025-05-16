@@ -1,7 +1,5 @@
 # Multi-Tenant System Implementation Tasks
 
-## 1. Thiết lập Cơ sở hạ tầng
-
 ### 1.1. Cài đặt và Cấu hình Cơ sở dữ liệu
 - [x] Cài đặt PostgreSQL
 - [x] Cấu hình PostgreSQL để hỗ trợ mô hình Schema-per-Tenant
@@ -52,10 +50,10 @@
 ### 2.5. API Development
 
 #### 2.5.1 System Level APIs
-- [ ] API quản lý tenant (CRUD)
+- [x] API quản lý tenant (CRUD)
 - [x] API quản lý packages (CRUD)
-- [ ] API quản lý modules (CRUD)
-- [ ] API kích hoạt/vô hiệu hóa module cho tenant
+- [x] API quản lý modules (CRUD)
+- [x] API kích hoạt/vô hiệu hóa module cho tenant
 
 #### 2.5.2 Tenant Level APIs
 - [ ] API quản lý users trong tenant (CRUD)

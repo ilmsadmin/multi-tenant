@@ -22,6 +22,9 @@ export class Tenant {
   @Column({ length: 20, default: 'active' })
   status: string;
 
+  @Column({ type: 'text', nullable: true })
+  description: string;
+
   @CreateDateColumn()
   created_at: Date;
 

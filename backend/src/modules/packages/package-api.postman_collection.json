@@ -1,0 +1,172 @@
+{
+  "info": {
+    "_postman_id": "5f6b3a76-8b7c-4d2a-b5a7-7fbf6a4e2c89",
+    "name": "Package API",
+    "description": "A collection to test the Package Management API endpoints",
+    "schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json"
+  },
+  "item": [
+    {
+      "name": "Create Package",
+      "request": {
+        "method": "POST",
+        "header": [
+          {
+            "key": "Content-Type",
+            "value": "application/json"
+          }
+        ],
+        "body": {
+          "mode": "raw",
+          "raw": "{\n    \"name\": \"Enterprise Package\",\n    \"description\": \"High-tier package with all features included\",\n    \"price\": 99.99\n}"
+        },
+        "url": {
+          "raw": "{{baseUrl}}/packages",
+          "host": [
+            "{{baseUrl}}"
+          ],
+          "path": [
+            "packages"
+          ]
+        },
+        "description": "Create a new package"
+      },
+      "response": []
+    },
+    {
+      "name": "Get All Packages",
+      "request": {
+        "method": "GET",
+        "header": [],
+        "url": {
+          "raw": "{{baseUrl}}/packages",
+          "host": [
+            "{{baseUrl}}"
+          ],
+          "path": [
+            "packages"
+          ]
+        },
+        "description": "Retrieve all packages"
+      },
+      "response": []
+    },
+    {
+      "name": "Get All Packages (Filtered)",
+      "request": {
+        "method": "GET",
+        "header": [],
+        "url": {
+          "raw": "{{baseUrl}}/packages?name=Enterprise",
+          "host": [
+            "{{baseUrl}}"
+          ],
+          "path": [
+            "packages"
+          ],
+          "query": [
+            {
+              "key": "name",
+              "value": "Enterprise"
+            }
+          ]
+        },
+        "description": "Retrieve packages filtered by name"
+      },
+      "response": []
+    },
+    {
+      "name": "Get Package By ID",
+      "request": {
+        "method": "GET",
+        "header": [],
+        "url": {
+          "raw": "{{baseUrl}}/packages/1",
+          "host": [
+            "{{baseUrl}}"
+          ],
+          "path": [
+            "packages",
+            "1"
+          ]
+        },
+        "description": "Retrieve a specific package by ID"
+      },
+      "response": []
+    },
+    {
+      "name": "Update Package",
+      "request": {
+        "method": "PATCH",
+        "header": [
+          {
+            "key": "Content-Type",
+            "value": "application/json"
+          }
+        ],
+        "body": {
+          "mode": "raw",
+          "raw": "{\n    \"name\": \"Updated Package Name\",\n    \"price\": 129.99\n}"
+        },
+        "url": {
+          "raw": "{{baseUrl}}/packages/1",
+          "host": [
+            "{{baseUrl}}"
+          ],
+          "path": [
+            "packages",
+            "1"
+          ]
+        },
+        "description": "Update an existing package"
+      },
+      "response": []
+    },
+    {
+      "name": "Delete Package",
+      "request": {
+        "method": "DELETE",
+        "header": [],
+        "url": {
+          "raw": "{{baseUrl}}/packages/1",
+          "host": [
+            "{{baseUrl}}"
+          ],
+          "path": [
+            "packages",
+            "1"
+          ]
+        },
+        "description": "Delete a package"
+      },
+      "response": []
+    }
+  ],
+  "event": [
+    {
+      "listen": "prerequest",
+      "script": {
+        "type": "text/javascript",
+        "exec": [
+          ""
+        ]
+      }
+    },
+    {
+      "listen": "test",
+      "script": {
+        "type": "text/javascript",
+        "exec": [
+          ""
+        ]
+      }
+    }
+  ],
+  "variable": [
+    {
+      "key": "baseUrl",
+      "value": "http://localhost:3000/api",
+      "type": "string"
+    }
+  ]
+}

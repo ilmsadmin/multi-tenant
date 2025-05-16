@@ -1,0 +1,134 @@
+{
+	"info": {
+		"_postman_id": "8d4f9c2d-e1b9-4b9a-8ebd-78b2a1b11a22",
+		"name": "Tenant Module Activation API",
+		"description": "API endpoints to manage module activation/deactivation for tenants",
+		"schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json"
+	},
+	"item": [
+		{
+			"name": "Activate/Deactivate Module for Tenant",
+			"request": {
+				"method": "POST",
+				"header": [
+					{
+						"key": "Content-Type",
+						"value": "application/json"
+					}
+				],
+				"body": {
+					"mode": "raw",
+					"raw": "{\n  \"module_id\": 1,\n  \"status\": \"active\",\n  \"settings\": {\n    \"enableFeature1\": true,\n    \"maxUsers\": 50\n  }\n}"
+				},
+				"url": {
+					"raw": "{{base_url}}/tenants/:tenant_id/modules",
+					"host": [
+						"{{base_url}}"
+					],
+					"path": [
+						"tenants",
+						":tenant_id",
+						"modules"
+					],
+					"variable": [
+						{
+							"key": "tenant_id",
+							"value": "1",
+							"description": "ID of the tenant"
+						}
+					]
+				},
+				"description": "Kích hoạt hoặc vô hiệu hóa một module cho tenant. Module status có thể là 'active' hoặc 'inactive'."
+			},
+			"response": []
+		},
+		{
+			"name": "Get Tenant Modules",
+			"request": {
+				"method": "GET",
+				"header": [],
+				"url": {
+					"raw": "{{base_url}}/tenants/:tenant_id/modules",
+					"host": [
+						"{{base_url}}"
+					],
+					"path": [
+						"tenants",
+						":tenant_id",
+						"modules"
+					],
+					"variable": [
+						{
+							"key": "tenant_id",
+							"value": "1",
+							"description": "ID of the tenant"
+						}
+					]
+				},
+				"description": "Lấy danh sách tất cả module được cấu hình cho tenant."
+			},
+			"response": []
+		},
+		{
+			"name": "Get Tenant Module Details",
+			"request": {
+				"method": "GET",
+				"header": [],
+				"url": {
+					"raw": "{{base_url}}/tenants/:tenant_id/modules/:module_id",
+					"host": [
+						"{{base_url}}"
+					],
+					"path": [
+						"tenants",
+						":tenant_id",
+						"modules",
+						":module_id"
+					],
+					"variable": [
+						{
+							"key": "tenant_id",
+							"value": "1",
+							"description": "ID of the tenant"
+						},
+						{
+							"key": "module_id",
+							"value": "1",
+							"description": "ID of the module"
+						}
+					]
+				},
+				"description": "Lấy thông tin chi tiết của một module cụ thể cho tenant (bao gồm cấu hình tùy chỉnh)."
+			},
+			"response": []
+		}
+	],
+	"event": [
+		{
+			"listen": "prerequest",
+			"script": {
+				"type": "text/javascript",
+				"exec": [
+					""
+				]
+			}
+		},
+		{
+			"listen": "test",
+			"script": {
+				"type": "text/javascript",
+				"exec": [
+					""
+				]
+			}
+		}
+	],
+	"variable": [
+		{
+			"key": "base_url",
+			"value": "http://localhost:3000",
+			"type": "string",
+			"description": "Base URL of the API"
+		}
+	]
+}

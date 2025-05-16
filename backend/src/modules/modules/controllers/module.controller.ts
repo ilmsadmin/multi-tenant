@@ -1,5 +1,17 @@
-import { Controller, Get, Post, Body, Patch, Param, Delete, HttpStatus, HttpCode } from '@nestjs/common';
-import { ModuleService } from '../services/module.service';
+import { 
+  Controller, 
+  Get, 
+  Post, 
+  Body, 
+  Patch, 
+  Param, 
+  Delete, 
+  HttpStatus, 
+  HttpCode, 
+  Query, 
+  ValidationPipe 
+} from '@nestjs/common';
+import { ModuleService, ModuleQueryParams } from '../services/module.service';
 import { CreateModuleDto } from '../dto/create-module.dto';
 import { UpdateModuleDto } from '../dto/update-module.dto';
 
@@ -14,15 +26,23 @@ export class ModuleController {
   }
 
   @Get()
-  findAll() {
-    return this.moduleService.findAll();
+  findAll(
+    @Query('search') search?: string,
+    @Query('skip') skip?: number,
+    @Query('take') take?: number,
+  ) {
+    const queryParams: ModuleQueryParams = {
+      search,
+      skip: skip ? +skip : undefined,
+      take: take ? +take : undefined,
+    };
+    return this.moduleService.findAll(queryParams);
   }
 
   @Get(':id')
   findOne(@Param('id') id: string) {
     return this.moduleService.findOne(+id);
   }
-
   @Patch(':id')
   update(@Param('id') id: string, @Body() updateModuleDto: UpdateModuleDto) {
     return this.moduleService.update(+id, updateModuleDto);
@@ -30,7 +50,12 @@ export class ModuleController {
 
   @Delete(':id')
   @HttpCode(HttpStatus.NO_CONTENT)
-  remove(@Param('id') id: string) {
-    return this.moduleService.remove(+id);
+  async remove(@Param('id') id: string) {
+    await this.moduleService.remove(+id);
+  }
+  
+  @Get('name/:name')
+  findByName(@Param('name') name: string) {
+    return this.moduleService.findByName(name);
   }
 }
