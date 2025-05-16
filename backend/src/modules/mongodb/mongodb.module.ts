@@ -4,10 +4,13 @@ import { ConfigModule, ConfigService } from '@nestjs/config';
 
 import { SystemLog, SystemLogSchema } from './schemas/system-log.schema';
 import { ModuleConfig, ModuleConfigSchema } from './schemas/module-config.schema';
+import { ActivityLog, ActivityLogSchema } from './schemas/activity-log.schema';
 
 import { SystemLogService } from './services/system-log.service';
 import { ModuleConfigService } from './services/module-config.service';
+import { ActivityLogService } from './services/activity-log.service';
 import { MongoDBController } from './mongodb.controller';
+import { ActivityLogController } from './controllers/activity-log.controller';
 
 @Module({
   imports: [
@@ -19,14 +22,13 @@ import { MongoDBController } from './mongodb.controller';
         dbName: configService.get('mongodb.dbName'),
         ...configService.get('mongodb.options'),
       }),
-    }),
-    MongooseModule.forFeature([
+    }),    MongooseModule.forFeature([
       { name: SystemLog.name, schema: SystemLogSchema },
       { name: ModuleConfig.name, schema: ModuleConfigSchema },
-    ]),
-  ],
-  controllers: [MongoDBController],
-  providers: [SystemLogService, ModuleConfigService],
-  exports: [SystemLogService, ModuleConfigService],
+      { name: ActivityLog.name, schema: ActivityLogSchema },
+    ]),  ],
+  controllers: [MongoDBController, ActivityLogController],
+  providers: [SystemLogService, ModuleConfigService, ActivityLogService],
+  exports: [SystemLogService, ModuleConfigService, ActivityLogService],
 })
 export class MongoDBModule {}

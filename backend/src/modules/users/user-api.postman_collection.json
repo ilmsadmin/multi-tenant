@@ -1,0 +1,371 @@
+{
+  "info": {
+    "name": "Multi-Tenant System - User API",
+    "description": "API collection for testing User Management API endpoints",
+    "schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json"
+  },
+  "item": [
+    {
+      "name": "User Management",
+      "description": "CRUD operations for user management within tenant",
+      "item": [
+        {
+          "name": "Get All Users",
+          "request": {
+            "method": "GET",
+            "url": {
+              "raw": "http://localhost:3000/api/tenant-data/users?page=1&limit=10",
+              "protocol": "http",
+              "host": ["localhost"],
+              "port": "3000",
+              "path": ["api", "tenant-data", "users"],
+              "query": [
+                {
+                  "key": "page",
+                  "value": "1"
+                },
+                {
+                  "key": "limit",
+                  "value": "10"
+                },
+                {
+                  "key": "search",
+                  "value": "",
+                  "disabled": true
+                },
+                {
+                  "key": "status",
+                  "value": "",
+                  "disabled": true
+                }
+              ]
+            },
+            "description": "Get a paginated list of all users with optional filtering by name and status",
+            "header": [
+              {
+                "key": "x-tenant-id",
+                "value": "1",
+                "description": "ID of the tenant to get users from"
+              }
+            ]
+          }
+        },
+        {
+          "name": "Create User",
+          "request": {
+            "method": "POST",
+            "url": {
+              "raw": "http://localhost:3000/api/tenant-data/users",
+              "protocol": "http",
+              "host": ["localhost"],
+              "port": "3000",
+              "path": ["api", "tenant-data", "users"]
+            },
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              },
+              {
+                "key": "x-tenant-id",
+                "value": "1",
+                "description": "ID of the tenant to create user in"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"username\": \"test_user\",\n  \"email\": \"user@example.com\",\n  \"password\": \"Password123!\",\n  \"firstName\": \"Test\",\n  \"lastName\": \"User\",\n  \"roleIds\": [1]\n}"
+            },
+            "description": "Create a new user within a tenant"
+          }
+        },
+        {
+          "name": "Get User by ID",
+          "request": {
+            "method": "GET",
+            "url": {
+              "raw": "http://localhost:3000/api/tenant-data/users/1",
+              "protocol": "http",
+              "host": ["localhost"],
+              "port": "3000",
+              "path": ["api", "tenant-data", "users", "1"]
+            },
+            "description": "Get detailed information for a specific user by ID",
+            "header": [
+              {
+                "key": "x-tenant-id",
+                "value": "1",
+                "description": "ID of the tenant the user belongs to"
+              }
+            ]
+          }
+        },
+        {
+          "name": "Get User by Username",
+          "request": {
+            "method": "GET",
+            "url": {
+              "raw": "http://localhost:3000/api/tenant-data/users/username/test_user",
+              "protocol": "http",
+              "host": ["localhost"],
+              "port": "3000",
+              "path": ["api", "tenant-data", "users", "username", "test_user"]
+            },
+            "description": "Get detailed information for a specific user by username",
+            "header": [
+              {
+                "key": "x-tenant-id",
+                "value": "1",
+                "description": "ID of the tenant the user belongs to"
+              }
+            ]
+          }
+        },
+        {
+          "name": "Update User",
+          "request": {
+            "method": "PATCH",
+            "url": {
+              "raw": "http://localhost:3000/api/tenant-data/users/1",
+              "protocol": "http",
+              "host": ["localhost"],
+              "port": "3000",
+              "path": ["api", "tenant-data", "users", "1"]
+            },
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              },
+              {
+                "key": "x-tenant-id",
+                "value": "1",
+                "description": "ID of the tenant the user belongs to"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"firstName\": \"Updated\",\n  \"lastName\": \"Name\",\n  \"status\": \"active\"\n}"
+            },
+            "description": "Update user information"
+          }
+        },
+        {
+          "name": "Change User Password",
+          "request": {
+            "method": "POST",
+            "url": {
+              "raw": "http://localhost:3000/api/tenant-data/users/1/change-password",
+              "protocol": "http",
+              "host": ["localhost"],
+              "port": "3000",
+              "path": ["api", "tenant-data", "users", "1", "change-password"]
+            },
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              },
+              {
+                "key": "x-tenant-id",
+                "value": "1",
+                "description": "ID of the tenant the user belongs to"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"currentPassword\": \"Password123!\",\n  \"newPassword\": \"NewPassword123!\"\n}"
+            },
+            "description": "Change user's password"
+          }
+        },
+        {
+          "name": "Delete User",
+          "request": {
+            "method": "DELETE",
+            "url": {
+              "raw": "http://localhost:3000/api/tenant-data/users/1",
+              "protocol": "http",
+              "host": ["localhost"],
+              "port": "3000",
+              "path": ["api", "tenant-data", "users", "1"]
+            },
+            "description": "Delete a user",
+            "header": [
+              {
+                "key": "x-tenant-id",
+                "value": "1",
+                "description": "ID of the tenant the user belongs to"
+              }
+            ]
+          }
+        }
+      ]
+    },
+    {
+      "name": "Role Management",
+      "description": "CRUD operations for role management within tenant",
+      "item": [
+        {
+          "name": "Get All Roles",
+          "request": {
+            "method": "GET",
+            "url": {
+              "raw": "http://localhost:3000/api/tenant-data/roles?page=1&limit=10",
+              "protocol": "http",
+              "host": ["localhost"],
+              "port": "3000",
+              "path": ["api", "tenant-data", "roles"],
+              "query": [
+                {
+                  "key": "page",
+                  "value": "1"
+                },
+                {
+                  "key": "limit",
+                  "value": "10"
+                },
+                {
+                  "key": "search",
+                  "value": "",
+                  "disabled": true
+                }
+              ]
+            },
+            "description": "Get a paginated list of all roles with optional filtering by name",
+            "header": [
+              {
+                "key": "x-tenant-id",
+                "value": "1",
+                "description": "ID of the tenant to get roles from"
+              }
+            ]
+          }
+        },
+        {
+          "name": "Create Role",
+          "request": {
+            "method": "POST",
+            "url": {
+              "raw": "http://localhost:3000/api/tenant-data/roles",
+              "protocol": "http",
+              "host": ["localhost"],
+              "port": "3000",
+              "path": ["api", "tenant-data", "roles"]
+            },
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              },
+              {
+                "key": "x-tenant-id",
+                "value": "1",
+                "description": "ID of the tenant to create role in"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"name\": \"admin\",\n  \"description\": \"Administrator with full access\",\n  \"permissions\": {\n    \"users\": [\"view\", \"create\", \"update\", \"delete\"],\n    \"roles\": [\"view\", \"create\", \"update\", \"delete\"]\n  }\n}"
+            },
+            "description": "Create a new role within a tenant"
+          }
+        },
+        {
+          "name": "Get Role by ID",
+          "request": {
+            "method": "GET",
+            "url": {
+              "raw": "http://localhost:3000/api/tenant-data/roles/1",
+              "protocol": "http",
+              "host": ["localhost"],
+              "port": "3000",
+              "path": ["api", "tenant-data", "roles", "1"]
+            },
+            "description": "Get detailed information for a specific role by ID",
+            "header": [
+              {
+                "key": "x-tenant-id",
+                "value": "1",
+                "description": "ID of the tenant the role belongs to"
+              }
+            ]
+          }
+        },
+        {
+          "name": "Update Role",
+          "request": {
+            "method": "PATCH",
+            "url": {
+              "raw": "http://localhost:3000/api/tenant-data/roles/1",
+              "protocol": "http",
+              "host": ["localhost"],
+              "port": "3000",
+              "path": ["api", "tenant-data", "roles", "1"]
+            },
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              },
+              {
+                "key": "x-tenant-id",
+                "value": "1",
+                "description": "ID of the tenant the role belongs to"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"description\": \"Updated role description\",\n  \"permissions\": {\n    \"users\": [\"view\", \"create\", \"update\"],\n    \"roles\": [\"view\"]\n  }\n}"
+            },
+            "description": "Update role information"
+          }
+        },
+        {
+          "name": "Delete Role",
+          "request": {
+            "method": "DELETE",
+            "url": {
+              "raw": "http://localhost:3000/api/tenant-data/roles/1",
+              "protocol": "http",
+              "host": ["localhost"],
+              "port": "3000",
+              "path": ["api", "tenant-data", "roles", "1"]
+            },
+            "description": "Delete a role",
+            "header": [
+              {
+                "key": "x-tenant-id",
+                "value": "1",
+                "description": "ID of the tenant the role belongs to"
+              }
+            ]
+          }
+        }
+      ]
+    }
+  ],
+  "event": [
+    {
+      "listen": "prerequest",
+      "script": {
+        "type": "text/javascript",
+        "exec": [""]
+      }
+    },
+    {
+      "listen": "test",
+      "script": {
+        "type": "text/javascript",
+        "exec": [""]
+      }
+    }
+  ],
+  "variable": [
+    {
+      "key": "baseUrl",
+      "value": "http://localhost:3000/api",
+      "type": "string"
+    }
+  ]
+}

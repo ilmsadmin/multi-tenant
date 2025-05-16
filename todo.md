@@ -56,18 +56,18 @@
 - [x] API kích hoạt/vô hiệu hóa module cho tenant
 
 #### 2.5.2 Tenant Level APIs
-- [ ] API quản lý users trong tenant (CRUD)
-- [ ] API quản lý roles và permissions (CRUD)
-- [ ] API xác thực và phân quyền
+- [x] API quản lý users trong tenant (CRUD)
+- [x] API quản lý roles và permissions (CRUD)
+- [x] API xác thực và phân quyền
 
 #### 2.5.3 User Level APIs
-- [ ] API cho dữ liệu giao dịch (`user_data`)
-- [ ] API ghi log hoạt động
+- [x] API cho dữ liệu giao dịch (`user_data`)
+- [x] API ghi log hoạt động
 
 ### 2.6. Authentication & Authorization
-- [ ] Implement JWT-based authentication
-- [ ] Implement multi-level authorization (System, Tenant, User)
-- [ ] Implement middleware để kiểm tra quyền truy cập
+- [x] Implement JWT-based authentication
+- [x] Implement multi-level authorization (System, Tenant, User)
+- [x] Implement middleware để kiểm tra quyền truy cập
 
 ## 3. Frontend Development (React)
 
