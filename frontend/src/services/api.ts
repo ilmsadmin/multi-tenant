@@ -1,11 +1,14 @@
 import axios from 'axios';
+import { apiUrl, apiTimeout, corsConfig } from '../config';
 
 // Tạo một instance của axios với cấu hình mặc định
 const api = axios.create({
-  baseURL: process.env.REACT_APP_API_URL || 'http://localhost:3000/api',
+  baseURL: apiUrl,
+  timeout: apiTimeout,
   headers: {
     'Content-Type': 'application/json',
   },
+  ...corsConfig
 });
 
 // Thêm interceptor để xử lý token trong mỗi request

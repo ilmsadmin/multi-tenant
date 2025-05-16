@@ -9,6 +9,9 @@ import './App.css';
 // Use the shared AuthGuard component
 import { AuthGuard } from './components';
 
+// Home Page
+import HomePage from './pages/HomePage';
+
 // Admin Pages
 import Login from './pages/auth/Login';
 import AdminDashboard from './pages/admin/Dashboard';
@@ -196,6 +199,9 @@ function App() {
         <CssBaseline />
         <Router>
           <Routes>
+            {/* Home route */}
+            <Route path="/" element={<HomePage />} />
+            
             {/* Admin routes */}
             <Route path="/login" element={<Login />} />
             <Route path="/admin" element={
@@ -225,7 +231,7 @@ function App() {
             
             {/* User routes */}
             <Route path="/user/login" element={<UserLogin />} />
-            <Route path="/" element={
+            <Route path="/user" element={
               <UserAuthGuard>
                 <UserLayout />
               </UserAuthGuard>
@@ -239,9 +245,8 @@ function App() {
               <Route path="inventory" element={<InventoryModule />} />
             </Route>
 
-            {/* Default redirect */}
-            <Route path="/" element={<Navigate to="/dashboard" />} />
-            <Route path="*" element={<Navigate to="/dashboard" />} />
+            {/* Fallback routes */}
+            <Route path="*" element={<Navigate to="/" />} />
           </Routes>
         </Router>
       </ThemeProvider>
