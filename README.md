@@ -2,6 +2,14 @@
 
 Hệ thống đa người thuê (Multi-tenant) được xây dựng trên NestJS, PostgreSQL, MongoDB và Redis.
 
+## Tài liệu hệ thống
+
+- [Authentication Architecture](./docs/authentication-architecture.md) - Cấu trúc xác thực người dùng
+- [Authentication Flow Diagram](./docs/auth-flow-diagram.md) - Sơ đồ luồng xác thực
+- [Authentication Implementation Checklist](./docs/auth-implementation-checklist.md) - Danh sách kiểm tra triển khai
+- [API Interceptor Guide](./docs/api-interceptor-guide.md) - Hướng dẫn xử lý API request/response
+- [Authentication Update Summary](./docs/auth-update-summary.md) - Tóm tắt cập nhật hệ thống xác thực
+
 ## Cấu trúc hệ thống
 
 Hệ thống sử dụng mô hình Schema-per-Tenant trong PostgreSQL, kết hợp với MongoDB cho dữ liệu phi cấu trúc và Redis cho caching.

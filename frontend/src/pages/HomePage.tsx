@@ -220,7 +220,7 @@ const HomePage: React.FC = () => {
                   mb: 2
                 }}
               >
-                Giải pháp Đa Tenant Toàn Diện
+                Giải pháp đa tenant toàn diện
               </Typography>
               <Typography 
                 variant="h5"

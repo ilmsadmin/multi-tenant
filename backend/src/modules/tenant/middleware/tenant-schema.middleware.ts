@@ -130,13 +130,13 @@ export class TenantSchemaMiddleware implements NestMiddleware {
         error: 'Internal Server Error'
       });
     }
-  }
-  private isSystemRoute(path: string): boolean {
+  }  private isSystemRoute(path: string): boolean {
     // Các route quản lý hệ thống không cần tenant schema
     return path.startsWith('/api/docs') || 
            path === '/api/health' || 
            path.startsWith('/api/system') ||
-           path.startsWith('/api/auth/system');
+           path.startsWith('/api/auth/system') ||
+           path.includes('/auth/system/');
   }
 
   private extractDomain(req: Request): string | null {
@@ -157,7 +157,6 @@ export class TenantSchemaMiddleware implements NestMiddleware {
 
     return null;
   }
-
   private extractSchemaFromPath(path: string): string | null {
     // Tìm schema từ path pattern /tenants/check/:schema
     const checkSchemaPattern = /\/tenants\/check\/([^\/]+)/;
@@ -165,6 +164,15 @@ export class TenantSchemaMiddleware implements NestMiddleware {
     
     if (match && match[1]) {
       return match[1];
+    }
+    
+    // For tenant auth routes, extract tenant ID but don't treat it as schema name
+    const tenantAuthPattern = /\/auth\/(tenant|user)\/([^\/]+)/;
+    const tenantAuthMatch = path.match(tenantAuthPattern);
+    
+    // Don't return tenant IDs from auth routes as schema names
+    if (tenantAuthMatch) {
+      return null;
     }
 
     return null;

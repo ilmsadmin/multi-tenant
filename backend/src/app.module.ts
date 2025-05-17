@@ -39,16 +39,15 @@ import redisConfig from './config/redis.config';
     TypeOrmModule.forRootAsync({
       imports: [ConfigModule],
       inject: [ConfigService],
-      useFactory: (configService: ConfigService) => ({
-        type: 'postgres',
-        host: configService.get('database.host'),
-        port: configService.get('database.port'),
-        username: configService.get('database.username'),
-        password: configService.get('database.password'),
-        database: configService.get('database.database'),
+      useFactory: (configService: ConfigService) => ({        type: 'postgres',
+        host: configService.get('database.host') || process.env.DB_HOST || 'localhost',
+        port: configService.get('database.port') || parseInt(process.env.DB_PORT || '5432', 10),
+        username: configService.get('database.username') || process.env.DB_USERNAME || 'postgres',
+        password: configService.get('database.password') || process.env.DB_PASSWORD || 'postgres',
+        database: configService.get('database.database') || process.env.DB_DATABASE || 'system_db',
         entities: [__dirname + '/**/*.entity{.ts,.js}'],
-        synchronize: configService.get('database.synchronize'),
-        ssl: configService.get('database.ssl'),
+        synchronize: configService.get('database.synchronize') || process.env.DB_SYNCHRONIZE === 'true',
+        ssl: configService.get('database.ssl') || process.env.DB_SSL === 'true',
         logging: ['error'],
         retryAttempts: 5,
         retryDelay: 3000,
@@ -71,7 +70,14 @@ export class AppModule implements NestModule {  configure(consumer: MiddlewareCo
     // Áp dụng Tenant Schema middleware
     consumer
       .apply(TenantSchemaMiddleware)
-      .forRoutes('api/tenant-data/*');
+      .exclude(
+        'api/auth/system/*',  // Exclude system authentication routes
+        'api/health',
+        'api/docs/*',
+        'api/public/*'
+      )
+      .forRoutes('api/*');  // Apply to all API routes with exclusions
+      
       // Áp dụng Authentication Level middleware cho tất cả các API được bảo vệ
     consumer
       .apply(AuthLevelMiddleware)

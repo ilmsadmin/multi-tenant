@@ -25,15 +25,19 @@ export class AuthService {
   
   /**
    * Xác thực người dùng dựa trên username và password
-   */
-  async validateUser(tenantId: number, username: string, password: string): Promise<any> {
+   */  async validateUser(tenantId: number, username: string, password: string): Promise<any> {
     try {
       this.logger.debug(`[CRITICAL DEBUG] AuthService.validateUser start: username=${username}, tenantId=${tenantId}`);
       this.logger.debug(`Attempting to validate user: ${username}, tenantId: ${tenantId}`);
       
-      if (!username || !password) {
-        this.logger.error(`[CRITICAL DEBUG] Missing username or password`);
-        return null;
+      if (!username) {
+        this.logger.error(`[CRITICAL DEBUG] Missing username`);
+        throw new UnauthorizedException(this.getAuthenticationErrorMessage('missing_username'));
+      }
+      
+      if (!password) {
+        this.logger.error(`[CRITICAL DEBUG] Missing password`);
+        throw new UnauthorizedException(this.getAuthenticationErrorMessage('missing_password'));
       }
       
       try {
@@ -42,7 +46,7 @@ export class AuthService {
         
         if (!user) {
           this.logger.debug(`[CRITICAL DEBUG] User not found: ${username}`);
-          return null;
+          throw new UnauthorizedException(this.getAuthenticationErrorMessage('user_not_found'));
         }
         
         this.logger.debug(`[CRITICAL DEBUG] User found: id=${user.id}, username="${user.username}"`);
@@ -55,10 +59,9 @@ export class AuthService {
         
         if (!user.passwordHash) {
           this.logger.error(`[CRITICAL DEBUG] Password hash is missing for user: ${username}`);
-          return null;
+          throw new UnauthorizedException(this.getAuthenticationErrorMessage('invalid_credentials'));
         }
-        
-        // Kiểm tra mật khẩu
+          // Kiểm tra mật khẩu
         this.logger.debug(`[CRITICAL DEBUG] Comparing passwords - Hash in DB: ${user.passwordHash.substring(0, 10)}...`);
         this.logger.debug(`Comparing password "${password}" with hash: ${user.passwordHash.substring(0, 10)}...`);
         
@@ -78,20 +81,22 @@ export class AuthService {
         
         this.logger.debug(`[CRITICAL DEBUG] Password doesn't match, authentication failed`);
         this.logger.debug(`Password doesn't match, authentication failed`);
-        return null;
+        throw new UnauthorizedException(this.getAuthenticationErrorMessage('invalid_credentials'));
       } catch (userError) {
         this.logger.error(`[CRITICAL DEBUG] Error finding user: ${userError.message}`);
         this.logger.error(`Error stack: ${userError.stack}`);
-        return null;
-      }
-    } catch (error) {
+        if (userError instanceof UnauthorizedException) {
+          throw userError;
+        }
+        throw new UnauthorizedException(this.getAuthenticationErrorMessage('user_not_found'));
+      }    } catch (error) {
       this.logger.error(`[CRITICAL DEBUG] Validation error: ${error.message}`);
       this.logger.error(`Lỗi xác thực: ${error.message}`);
       this.logger.error(`Error stack: ${error.stack}`);
       if (error instanceof UnauthorizedException) {
         throw error;
       }
-      return null;
+      throw new UnauthorizedException(this.getAuthenticationErrorMessage('default'));
     }
   }
   
@@ -273,26 +278,31 @@ export class AuthService {
       this.logger.debug(`Refresh token attempt for level ${level}, tenant ${tenantId || 'system'}`);
       
       // Verify refresh token
-      let payload: any;
-      try {
+      let payload: any;      try {
         payload = this.jwtService.verify(refreshToken, {
           secret: this.configService.get('JWT_REFRESH_SECRET') || 'refresh-supersecretkey',
         });
       } catch (error) {
         this.logger.error(`Invalid refresh token: ${error.message}`);
-        throw new UnauthorizedException('Refresh token không hợp lệ hoặc hết hạn');
+        if (error.name === 'TokenExpiredError') {
+          throw new UnauthorizedException('Phiên đăng nhập đã hết hạn. Vui lòng đăng nhập lại.');
+        } else if (error.name === 'JsonWebTokenError') {
+          throw new UnauthorizedException('Token không hợp lệ. Vui lòng đăng nhập lại.');
+        } else {
+          throw new UnauthorizedException('Token đã hết hạn hoặc không hợp lệ. Vui lòng đăng nhập lại.');
+        }
       }
       
       if (payload.level !== level) {
-        throw new UnauthorizedException('Token level không khớp');
+        throw new UnauthorizedException('Quyền truy cập của token không hợp lệ. Token không thuộc cấp độ truy cập yêu cầu.');
       }
       
       if (payload.type !== 'refresh_token') {
-        throw new UnauthorizedException('Token không phải là refresh token');
+        throw new UnauthorizedException('Loại token không hợp lệ. Vui lòng sử dụng refresh token để làm mới phiên đăng nhập.');
       }
       
       if (tenantId && String(payload.tenantId) !== String(tenantId)) {
-        throw new UnauthorizedException('Token tenant không khớp');
+        throw new UnauthorizedException('Token này không thuộc tenant hiện tại. Vui lòng đăng nhập lại với tenant đúng.');
       }
       
       // Check if session exists in Redis
@@ -345,26 +355,31 @@ export class AuthService {
       return {
         token,
         refreshToken: newRefreshToken,
-      };
-    } catch (error) {
+      };    } catch (error) {
       this.logger.error(`Refresh token error: ${error.message}`);
       if (error instanceof UnauthorizedException) {
         throw error;
       }
-      throw new UnauthorizedException('Lỗi khi làm mới token');
+      throw new UnauthorizedException('Đã xảy ra lỗi khi làm mới token, vui lòng đăng nhập lại');
     }
   }
-  
-  /**
+    /**
    * Đăng nhập hệ thống với quyền admin
    */
   async systemLogin(username: string, password: string) {
-    try {
-      this.logger.debug(`System login attempt for username: ${username}`);
+    try {      this.logger.debug(`System login attempt for username: ${username}`);
+      
+      if (!username) {
+        throw new UnauthorizedException('Tên đăng nhập không được để trống cho đăng nhập hệ thống.');
+      }
+      
+      if (!password) {
+        throw new UnauthorizedException('Mật khẩu không được để trống cho đăng nhập hệ thống.');
+      }
       
       const user = await this.validateSystemUser(username, password);
       if (!user) {
-        throw new UnauthorizedException('Thông tin đăng nhập không hợp lệ');
+        throw new UnauthorizedException('Thông tin đăng nhập hệ thống không chính xác hoặc tài khoản không tồn tại. Vui lòng kiểm tra thông tin đăng nhập.');
       }
       
       // Tạo JWT payload
@@ -462,11 +477,10 @@ export class AuthService {
         throw error;
       }
       
-      this.logger.debug(`Tenant admin login attempt: tenant=${tenantId}, username=${username}`);
-      
+      this.logger.debug(`Tenant admin login attempt: tenant=${tenantId}, username=${username}`);      
       const user = await this.validateUser(Number(tenantId), username, password);
       if (!user) {
-        throw new UnauthorizedException('Thông tin đăng nhập không hợp lệ');
+        throw new UnauthorizedException('Thông tin đăng nhập không chính xác hoặc tài khoản không tồn tại');
       }
       
       // Kiểm tra xem người dùng có quyền admin không
@@ -477,7 +491,7 @@ export class AuthService {
       );
       
       if (!isAdmin) {
-        throw new UnauthorizedException('Người dùng không có quyền admin của tenant');
+        throw new UnauthorizedException('Tài khoản không có quyền quản trị cho tenant này');
       }
       
       // Tạo JWT payload
@@ -570,16 +584,15 @@ export class AuthService {
   async userLogin(tenantId: number, username: string, password: string) {
     try {
       this.logger.debug(`User login attempt: tenant=${tenantId}, username=${username}`);
-      
-      // Xác thực người dùng
+        // Xác thực người dùng
       const user = await this.validateUser(tenantId, username, password);
       if (!user) {
-        throw new UnauthorizedException('Thông tin đăng nhập không hợp lệ');
+        throw new UnauthorizedException('Thông tin đăng nhập không chính xác hoặc tài khoản không tồn tại');
       }
       
       // Kiểm tra xem người dùng có thuộc về tenant hiện tại không
       if (user.tenantId !== tenantId) {
-        throw new UnauthorizedException('Người dùng không thuộc tenant này');
+        throw new UnauthorizedException('Tài khoản này không thuộc về tenant hiện tại');
       }
       
       // Gọi hàm đăng nhập chung
@@ -589,39 +602,71 @@ export class AuthService {
       throw error;
     }
   }
-  
-  /**
+    /**
    * Xác thực người dùng hệ thống
    */
   private async validateSystemUser(username: string, password: string): Promise<any> {
-    this.logger.debug(`Validating system user: ${username}`);
+    console.log('=====================================================================');
+    console.log('VALIDATE SYSTEM USER');
+    console.log('=====================================================================');
+    console.log(`Username: ${username}`);
+    console.log(`Password: ${password}`);
     
-    try {
-      // Truy vấn thông tin admin hệ thống trực tiếp từ database
+    try {      // Truy vấn thông tin admin hệ thống trực tiếp từ database
+      console.log('Querying database for system user...');
       const systemUser = await this.dataSource.query(
         `SELECT * FROM system_users WHERE username = $1`,
         [username]
       );
       
+      console.log('Query result:', systemUser ? `Found ${systemUser.length} users` : 'No result');      
       if (!systemUser || systemUser.length === 0) {
-        this.logger.debug(`System user not found: ${username}`);
-        return null;
+        console.log(`System user not found: ${username}`);
+        throw new UnauthorizedException('Tài khoản hệ thống không tồn tại. Vui lòng kiểm tra tên đăng nhập.');
       }
       
       const user = systemUser[0];
-      
-      // Kiểm tra trạng thái tài khoản
+      console.log('User found:', {
+        id: user.id,
+        username: user.username,
+        hasPassword: !!user.password,
+        hasPasswordHash: !!user.password_hash,
+        status: user.status
+      });
+        // Kiểm tra trạng thái tài khoản
       if (user.status !== 'active') {
-        this.logger.debug(`System user account is not active: ${username}`);
-        return null;
+        this.logger.debug(`System user account is not active: ${username}, status: ${user.status}`);
+        // Provide more specific error based on account status
+        if (user.status === 'disabled' || user.status === 'inactive') {
+          throw new UnauthorizedException('Tài khoản hệ thống đã bị vô hiệu hóa. Vui lòng liên hệ quản trị viên.');
+        } else if (user.status === 'pending') {
+          throw new UnauthorizedException('Tài khoản hệ thống đang chờ kích hoạt. Vui lòng liên hệ quản trị viên.');
+        } else if (user.status === 'locked') {
+          throw new UnauthorizedException('Tài khoản hệ thống đã bị khóa. Vui lòng liên hệ quản trị viên để mở khóa.');
+        } else {
+          throw new UnauthorizedException(`Tài khoản hệ thống không ở trạng thái hoạt động (${user.status}). Vui lòng liên hệ quản trị viên.`);
+        }
       }
+        // Kiểm tra mật khẩu
+      this.logger.debug(`Checking password for system user: ${username}`);
+      this.logger.debug(`Password field in DB: ${user.password ? 'EXISTS' : 'NULL'}, Password hash field in DB: ${user.password_hash ? 'EXISTS' : 'NULL'}`);
       
-      // Kiểm tra mật khẩu
-      const isPasswordMatch = await bcrypt.compare(password, user.password_hash);
+      // Kiểm tra cả trường password và password_hash vì có thể sử dụng một trong hai
+      let isPasswordMatch = false;
       
-      if (!isPasswordMatch) {
+      if (user.password) {
+        this.logger.debug(`Comparing with password field (length: ${user.password.length})`);
+        isPasswordMatch = await bcrypt.compare(password, user.password);
+        this.logger.debug(`Password field comparison result: ${isPasswordMatch}`);
+      } 
+      
+      if (!isPasswordMatch && user.password_hash) {
+        this.logger.debug(`Comparing with password_hash field (length: ${user.password_hash.length})`);
+        isPasswordMatch = await bcrypt.compare(password, user.password_hash);
+        this.logger.debug(`Password_hash field comparison result: ${isPasswordMatch}`);
+      }        if (!isPasswordMatch) {
         this.logger.debug(`System user password doesn't match: ${username}`);
-        return null;
+        throw new UnauthorizedException('Mật khẩu không chính xác cho tài khoản hệ thống. Vui lòng kiểm tra và thử lại.');
       }
       
       // Chuyển đổi tên cột từ snake_case sang camelCase
@@ -630,10 +675,14 @@ export class AuthService {
         username: user.username,
         roles: user.roles ? JSON.parse(user.roles) : ['system_admin'],
         permissions: user.permissions ? JSON.parse(user.permissions) : [],
-      };
-    } catch (error) {
+      };    } catch (error) {
       this.logger.error(`Error validating system user: ${error.message}`);
-      return null;
+      // Re-throw specific unauthorized exceptions
+      if (error instanceof UnauthorizedException) {
+        throw error;
+      }
+      // Provide a generic error for other exceptions
+      throw new UnauthorizedException('Lỗi xảy ra khi xác thực tài khoản hệ thống. Vui lòng thử lại sau.');
     }
   }
   
@@ -722,6 +771,32 @@ export class AuthService {
       });
     } catch (error) {
       this.logger.error(`Activity logging error: ${error.message}`);
+    }
+  }
+  
+  /**
+   * Detailed error message for specific authentication failures
+   */
+  getAuthenticationErrorMessage(error: string): string {
+    switch (error) {
+      case 'user_not_found':
+        return 'Tài khoản không tồn tại. Vui lòng kiểm tra tên đăng nhập.';
+      case 'tenant_not_found':
+        return 'Tenant không tồn tại hoặc không hợp lệ. Vui lòng kiểm tra thông tin tenant.';
+      case 'invalid_credentials':
+        return 'Mật khẩu không chính xác. Vui lòng kiểm tra lại mật khẩu.';
+      case 'account_disabled':
+        return 'Tài khoản đã bị vô hiệu hóa. Vui lòng liên hệ quản trị viên.';
+      case 'password_expired':
+        return 'Mật khẩu đã hết hạn. Vui lòng đổi mật khẩu.';
+      case 'missing_password':
+        return 'Mật khẩu không được cung cấp. Vui lòng nhập mật khẩu.';
+      case 'missing_username':
+        return 'Tên đăng nhập không được cung cấp. Vui lòng nhập tên đăng nhập.';
+      case 'session_expired':
+        return 'Phiên đăng nhập đã hết hạn. Vui lòng đăng nhập lại.';
+      default:
+        return 'Đăng nhập thất bại. Vui lòng kiểm tra thông tin đăng nhập.';
     }
   }
 }

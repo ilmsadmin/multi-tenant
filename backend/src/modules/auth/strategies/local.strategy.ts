@@ -20,11 +20,9 @@ export class LocalStrategy extends PassportStrategy(Strategy) {
     
     // Lấy tenant_id từ request
     const tenantId = req.headers['x-tenant-id'] ? parseInt(req.headers['x-tenant-id'] as string, 10) : null;
-    this.logger.debug(`Tenant ID from request headers: ${tenantId}`);
-    
-    if (!tenantId) {
+    this.logger.debug(`Tenant ID from request headers: ${tenantId}`);      if (!tenantId) {
       this.logger.error('Tenant ID missing from request headers');
-      throw new UnauthorizedException('Tenant không hợp lệ');
+      throw new UnauthorizedException('Không tìm thấy Tenant ID. Vui lòng đảm bảo tiêu đề x-tenant-id được cung cấp.');
     }
 
     try {
@@ -33,7 +31,8 @@ export class LocalStrategy extends PassportStrategy(Strategy) {
       
       if (!user) {
         this.logger.debug(`User validation failed for username: ${username}`);
-        throw new UnauthorizedException('Thông tin đăng nhập không hợp lệ');
+        // More specific error message for failed login attempts
+        throw new UnauthorizedException('Đăng nhập thất bại. Tên đăng nhập hoặc mật khẩu không chính xác.');
       }
       
       this.logger.debug(`Authentication successful for user: ${JSON.stringify({

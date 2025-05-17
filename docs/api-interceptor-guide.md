@@ -1,23 +1,16 @@
-import axios from 'axios';
-import { apiUrl, apiTimeout, corsConfig } from '../config';
+# API Interceptor Consistency Guide
 
-// API Logger function
-const logApiCall = (method: string, url: string, data?: any, headers?: any) => {
-  console.log(`[API] ${method} ${url}`);
-  if (data) console.log(`[API] Request data:`, data);
-  if (headers) console.log(`[API] Request headers:`, headers);
-};
+This guide explains how the API interceptor should handle requests and responses consistently across all user types.
 
-// Tạo một instance của axios với cấu hình mặc định
-const api = axios.create({
-  baseURL: apiUrl,
-  timeout: apiTimeout,
-  headers: {
-    'Content-Type': 'application/json',
-  },
-  ...corsConfig
-});
+## Request Interceptor
 
+The request interceptor should:
+
+1. Identify the endpoint type (system, tenant, or user)
+2. Add the correct token to the request
+3. Add schema information when needed
+
+```typescript
 // Thêm interceptor để xử lý token và schema name trong mỗi request
 api.interceptors.request.use(
   (config) => {
@@ -48,22 +41,18 @@ api.interceptors.request.use(
       schemaName = localStorage.getItem('schema_name') || 
                    localStorage.getItem('user_schema_name') || 'default';
       console.log(`[API Interceptor] Default endpoint. Using Schema name: ${schemaName}`);
-    }    // Thêm Authorization header nếu có token
+    }
+    
+    // Thêm Authorization header nếu có token
     if (token) {
       config.headers.Authorization = `Bearer ${token}`;
     }
-      // Chỉ thêm schema name vào header cho các endpoint auth/tenant và auth/user
-    // KHÔNG thêm cho tất cả các requests để tránh vấn đề CORS
-    if (schemaName && (config.url?.includes('/auth/tenant') || config.url?.includes('/auth/user'))) {
-      // Thêm schema name vào header
-      config.headers['X-Schema-Name'] = schemaName;
-      console.log(`[API Interceptor] Adding schema_name to request header: ${schemaName}`);
-    }
     
-    console.log(`[API Interceptor] Final request: ${config.method?.toUpperCase() || 'GET'} ${config.url}`);
-    console.log(`[API Interceptor] Headers:`, JSON.stringify(config.headers));
-    if (config.params) console.log(`[API Interceptor] Params:`, JSON.stringify(config.params));
-    if (config.data) console.log(`[API Interceptor] Data:`, JSON.stringify(config.data));
+    // Add schema header for tenant-specific operations
+    if (schemaName && (config.url?.includes('/auth/tenant') || config.url?.includes('/auth/user'))) {
+      console.log(`[API Interceptor] Adding schema_name to request: ${schemaName}`);
+      config.headers['X-Schema-Name'] = schemaName;
+    }
     
     return config;
   },
@@ -71,29 +60,30 @@ api.interceptors.request.use(
     return Promise.reject(error);
   }
 );
+```
 
+## Response Interceptor
+
+The response interceptor should:
+
+1. Handle 401 errors correctly
+2. Redirect to the appropriate login page based on the endpoint
+3. Skip redirects for login and tenant check endpoints
+
+```typescript
 // Thêm interceptor để xử lý các response
 api.interceptors.response.use(
   (response) => {
     console.log(`[API Response] Status: ${response.status} ${response.statusText}`);
     console.log(`[API Response] URL: ${response.config.url}`);
-    console.log(`[API Response] Data:`, response.data);
     return response;
   },
   (error) => {
     console.error(`[API Error] ${error.message}`);
-    if (error.response) {
-      console.error(`[API Error] Status: ${error.response.status}`);
-      console.error(`[API Error] Data:`, error.response.data);
-      console.error(`[API Error] Headers:`, error.response.headers);
-    }    if (error.config) {
-      console.error(`[API Error] Request URL: ${error.config.url}`);
-      console.error(`[API Error] Request Method: ${error.config.method}`);
-      if (error.config.data) console.error(`[API Error] Request Data:`, error.config.data);
-    }
     
     // Xử lý lỗi 401 (Unauthorized) - logout nếu token hết hạn
-    if (error.response && error.response.status === 401) {      // Xác định loại endpoint đang gọi để chuyển hướng đến trang login tương ứng
+    if (error.response && error.response.status === 401) {
+      // Xác định loại endpoint đang gọi để chuyển hướng đến trang login tương ứng
       const url = error.config ? error.config.url : '';
       
       // Không chuyển hướng khi đang kiểm tra tenant tồn tại hoặc khi đang đăng nhập
@@ -139,8 +129,27 @@ api.interceptors.response.use(
         }
       }
     }
+    
     return Promise.reject(error);
   }
 );
+```
 
-export default api;
+## Key Consistency Points
+
+1. **Token Storage**: Each user type should have its own localStorage key for tokens
+   - System Admin: `token`
+   - Tenant Admin: `tenant_token`
+   - Tenant User: `user_token`
+
+2. **Schema Storage**: Each user type should store schema information correctly
+   - System Admin: `schema_name` (global schema)
+   - Tenant Admin: `schema_name` (tenant schema)
+   - Tenant User: `user_schema_name` (tenant schema)
+
+3. **Logout Cleanup**: On logout, only remove tokens related to the current user type
+   - Don't clear ALL tokens as that affects multiple sessions
+
+4. **Error Handling**: Skip redirects for login endpoints to prevent redirect loops
+
+5. **Headers**: Include Authorization and schema headers as appropriate for each request type

@@ -4,6 +4,8 @@ import { PassportModule } from '@nestjs/passport';
 import { ConfigModule, ConfigService } from '@nestjs/config';
 import { APP_GUARD } from '@nestjs/core';
 import { AuthService } from './services/auth.service';
+import { SystemUserService } from './services/system-user.service';
+import { MigrationService } from './services/migration.service';
 import { JwtStrategy } from './strategies/jwt.strategy';
 import { LocalStrategy } from './strategies/local.strategy';
 import { AuthController } from './controllers/auth.controller';
@@ -42,6 +44,8 @@ import { AuthMiddlewareModule } from './middleware/middleware.module';
     UserAuthController
   ],  providers: [
     AuthService, 
+    SystemUserService,
+    MigrationService, // Add MigrationService to providers
     JwtStrategy, 
     LocalStrategy,
     JwtService, // Add JwtService explicitly as a provider
@@ -60,6 +64,6 @@ import { AuthMiddlewareModule } from './middleware/middleware.module';
       provide: APP_GUARD,
       useClass: PermissionsGuard,
     },  ],
-  exports: [AuthService, JwtStrategy, JwtAuthGuard, RolesGuard, PermissionsGuard],
+  exports: [AuthService, SystemUserService, MigrationService, JwtStrategy, JwtAuthGuard, RolesGuard, PermissionsGuard],
 })
 export class AuthModule {}

@@ -26,17 +26,15 @@ export class AuthController {
   @ApiResponse({ status: 401, description: 'Thông tin đăng nhập không chính xác' })
   async login(@Request() req) {
     this.logger.debug(`[CRITICAL DEBUG] AuthController.login called`);
-    this.logger.debug(`Login endpoint called for user: ${req.user?.username || 'unknown'}, tenant: ${req.user?.tenantId || 'unknown'}`);
-    
-    // Verify the authentication was successful and user data is available
+    this.logger.debug(`Login endpoint called for user: ${req.user?.username || 'unknown'}, tenant: ${req.user?.tenantId || 'unknown'}`);    // Verify the authentication was successful and user data is available
     if (!req.user) {
       this.logger.error(`[CRITICAL DEBUG] AuthController.login - No user object in request`);
-      throw new UnauthorizedException('Vui lòng đăng nhập');
+      throw new UnauthorizedException('Đăng nhập thất bại. Tài khoản không tồn tại hoặc thông tin đăng nhập không chính xác.');
     }
     
     if (!req.user.tenantId) {
       this.logger.error(`[CRITICAL DEBUG] AuthController.login - No tenantId in user object: ${JSON.stringify(req.user)}`);
-      throw new UnauthorizedException('Tenant ID không hợp lệ');
+      throw new UnauthorizedException('Đăng nhập thất bại. Không tìm thấy thông tin Tenant ID cho tài khoản này.');
     }
     
     // Log the entire user object from the request
