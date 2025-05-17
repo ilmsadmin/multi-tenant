@@ -16,6 +16,7 @@ import {
   DefaultValuePipe,
   BadRequestException
 } from '@nestjs/common';
+import { Public } from '../../modules/auth/decorators/public.decorator';
 import { TenantService } from './tenant.service';
 import { CreateTenantDto, TenantStatus } from './dto/create-tenant.dto';
 import { UpdateTenantDto } from './dto/update-tenant.dto';
@@ -192,13 +193,13 @@ export class TenantController {
     @Param('moduleId', ParseIntPipe) moduleId: number
   ) {
     return this.tenantService.getTenantModule(id, moduleId);
-  }
-
-  @Get('check/:schema')
+  }  @Get('check/:schema')
   @HttpCode(HttpStatus.OK)
+  @Public() // Đánh dấu endpoint này là public, không yêu cầu xác thực
   @ApiOperation({ summary: 'Kiểm tra schema tenant có tồn tại không' })
   @ApiParam({ name: 'schema', description: 'Schema name của tenant cần kiểm tra' })
   @ApiResponse({ status: HttpStatus.OK, description: 'Kết quả kiểm tra' })
+  // Điểm cuối này không yêu cầu xác thực, được sử dụng trong quá trình đăng nhập ban đầu
   async checkSchema(@Param('schema') schema: string) {
     const tenant = await this.tenantService.findBySchemaName(schema);
     return {
@@ -207,7 +208,8 @@ export class TenantController {
         id: tenant.id,
         name: tenant.name,
         schema_name: tenant.schema_name
-      } : null
+      } : null,
+      message: tenant ? 'Tenant đã được tìm thấy' : 'Tenant không tồn tại'
     };
   }
 }

@@ -92,11 +92,17 @@ api.interceptors.response.use(
       console.error(`[API Error] Request Method: ${error.config.method}`);
       if (error.config.data) console.error(`[API Error] Request Data:`, error.config.data);
     }
-    
-    // Xử lý lỗi 401 (Unauthorized) - logout nếu token hết hạn
+      // Xử lý lỗi 401 (Unauthorized) - logout nếu token hết hạn
     if (error.response && error.response.status === 401) {
       // Xác định loại endpoint đang gọi để chuyển hướng đến trang login tương ứng
       const url = error.config.url;
+      
+      // Không chuyển hướng khi đang kiểm tra tenant tồn tại
+      if (url.includes('/tenants/check/')) {
+        console.log('[API Error] Skipping redirect for tenant check endpoint');
+        return Promise.reject(error);
+      }
+      
       if (url.includes('/auth/system')) {
         localStorage.removeItem('token');
         localStorage.removeItem('user');

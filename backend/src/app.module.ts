@@ -72,8 +72,7 @@ export class AppModule implements NestModule {  configure(consumer: MiddlewareCo
     consumer
       .apply(TenantSchemaMiddleware)
       .forRoutes('api/tenant-data/*');
-    
-    // Áp dụng Authentication Level middleware cho tất cả các API được bảo vệ
+      // Áp dụng Authentication Level middleware cho tất cả các API được bảo vệ
     consumer
       .apply(AuthLevelMiddleware)
       .exclude(
@@ -83,10 +82,10 @@ export class AppModule implements NestModule {  configure(consumer: MiddlewareCo
         { path: 'api/auth/refresh-token', method: RequestMethod.POST },
         'api/health',
         'api/public/*',
+        'api/tenants/check/*', // Cho phép kiểm tra tenant mà không cần xác thực
       )
       .forRoutes('api/*');
-    
-    // Áp dụng Permission Check middleware sau khi xác thực
+      // Áp dụng Permission Check middleware sau khi xác thực
     consumer
       .apply(PermissionCheckMiddleware)
       .exclude(
@@ -97,6 +96,7 @@ export class AppModule implements NestModule {  configure(consumer: MiddlewareCo
         'api/auth/logout',
         'api/health',
         'api/public/*',
+        'api/tenants/check/*', // Cho phép kiểm tra tenant mà không cần xác thực
       )
       .forRoutes('api/*');
   }

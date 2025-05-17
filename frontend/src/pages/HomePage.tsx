@@ -39,10 +39,10 @@ const HomePage: React.FC = () => {
   const [registerOpen, setRegisterOpen] = useState(false);
   const [fullName, setFullName] = useState('');
   const [phoneNumber, setPhoneNumber] = useState('');
-  const [captchaValue, setCaptchaValue] = useState<string | null>(null);
-  const [registerError, setRegisterError] = useState('');
+  const [captchaValue, setCaptchaValue] = useState<string | null>(null);  const [registerError, setRegisterError] = useState('');
   const [isRegistering, setIsRegistering] = useState(false);
-  const [registrationSuccess, setRegistrationSuccess] = useState(false);  // Xử lý đăng nhập
+  const [registrationSuccess, setRegistrationSuccess] = useState(false);  
+  // Xử lý đăng nhập
   const handleLogin = async () => {
     // Kiểm tra trường trống
     if (!schemaName.trim()) {
@@ -59,20 +59,32 @@ const HomePage: React.FC = () => {
     
     setIsLoggingIn(true);
     setLoginError('');
-      try {
+    
+    try {
       // Gọi API kiểm tra tenant schema name
       const response = await tenantService.checkTenantExists(schemaName);
+        
+      // In thông tin response để kiểm tra
+      console.log("Tenant check response:", response);
       
-      if (response.exists) {
-        // Kiểm tra thông tin tenant có đầy đủ không
-        if (response.tenant && response.tenant.schema_name) {
-          // Chuyển hướng đến trang đăng nhập của tenant
-          navigate(`/tenant/login?schema=${response.tenant.schema_name}`);
-        } else {
-          throw new Error('Dữ liệu tenant không hợp lệ');
-        }
+      // Kiểm tra chặt chẽ từng điều kiện
+      if (!response) {
+        setLoginError('Không nhận được phản hồi từ máy chủ');
+        return;
+      }
+      
+      // Kiểm tra chi tiết từng điều kiện để đảm bảo tính an toàn
+      const tenantExists = response.exists === true;
+      const tenantData = response.tenant;
+      const hasValidSchema = tenantData && typeof tenantData.schema_name === 'string' && tenantData.schema_name.trim() !== '';
+      
+      // Chỉ điều hướng khi đảm bảo tất cả điều kiện
+      if (tenantExists && hasValidSchema && tenantData) {
+        // TypeScript sẽ hiểu rằng tenantData đã được kiểm tra và không thể là null/undefined ở đây
+        navigate(`/tenant/login?schema=${tenantData.schema_name}`);
       } else {
-        setLoginError('Tên tenant không tồn tại trong hệ thống');
+        // Hiển thị thông báo lỗi từ API nếu có
+        setLoginError(response.message || 'Tenant không tồn tại hoặc không hợp lệ');
       }
     } catch (error: any) {
       console.error('Login error:', error);
@@ -530,18 +542,28 @@ const HomePage: React.FC = () => {
             </Typography>
           </Box>
         </Container>
-      </Box>      {/* Login Dialog */}
-      <Dialog 
+      </Box>      {/* Login Dialog */}      <Dialog 
         open={loginOpen}
-        onClose={() => setLoginOpen(false)}
+        onClose={() => {
+          // Reset tất cả các trạng thái khi đóng dialog
+          setLoginOpen(false);
+          setSchemaName('');
+          setLoginError('');
+          setIsLoggingIn(false);
+        }}
         fullWidth
         maxWidth="xs"
       >
         <DialogTitle>
-          Đăng nhập
-          <IconButton
+          Đăng nhập          <IconButton
             aria-label="close"
-            onClick={() => setLoginOpen(false)}
+            onClick={() => {
+              // Reset tất cả các trạng thái khi đóng dialog
+              setLoginOpen(false);
+              setSchemaName('');
+              setLoginError('');
+              setIsLoggingIn(false);
+            }}
             sx={{
               position: 'absolute',
               right: 8,
@@ -575,9 +597,13 @@ const HomePage: React.FC = () => {
             sx={{ mt: 1 }}
             placeholder="company_name"
           />
-        </DialogContent>
-        <DialogActions sx={{ px: 3, pb: 3 }}>
-          <Button onClick={() => setLoginOpen(false)}>
+        </DialogContent>        <DialogActions sx={{ px: 3, pb: 3 }}>
+          <Button onClick={() => {
+            setLoginOpen(false);
+            setSchemaName('');
+            setLoginError('');
+            setIsLoggingIn(false);
+          }}>
             Hủy
           </Button>
           <Button 
