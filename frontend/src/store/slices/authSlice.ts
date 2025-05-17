@@ -3,22 +3,15 @@ import { authService } from '../../services/auth.service';
 import { AuthState, LoginRequest } from '../../types/auth.types';
 
 // Async thunks
-export const login = createAsyncThunk(
-  'auth/login',
-  async (credentials: LoginRequest, { rejectWithValue }) => {
+export const login = createAsyncThunk(  'auth/login',  async (credentials: LoginRequest, { rejectWithValue }) => {
     try {
       const response = await authService.login(credentials);
-      // Lưu token vào localStorage
+      // Store token and user info in localStorage
       localStorage.setItem('token', response.access_token);
       localStorage.setItem('user', JSON.stringify(response.user));
       
-      // Ensure tenant ID is always set in localStorage
-      if (response.user && response.user.tenantId) {
-        localStorage.setItem('tenant_id', response.user.tenantId.toString());
-      } else if (!localStorage.getItem('tenant_id')) {
-        // Default tenant ID if not available in response
-        localStorage.setItem('tenant_id', '1');
-      }
+      // Ensure schema name is always stored in localStorage
+      localStorage.setItem('schema_name', credentials.schemaName);
       
       return response;
     } catch (error: any) {

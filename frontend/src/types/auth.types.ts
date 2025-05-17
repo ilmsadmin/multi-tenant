@@ -20,6 +20,7 @@ export interface AuthState {
 export interface LoginRequest {
   username: string;
   password: string;
+  schemaName: string;  // Sử dụng tên schema thay vì ID
 }
 
 export interface LoginResponse {

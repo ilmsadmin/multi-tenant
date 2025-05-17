@@ -29,10 +29,9 @@ const HomePage: React.FC = () => {
   const theme = useTheme();
   const navigate = useNavigate();
   const isMobile = useMediaQuery(theme.breakpoints.down('sm'));
-  
-  // State cho modal đăng nhập
+    // State cho modal đăng nhập
   const [loginOpen, setLoginOpen] = useState(false);
-  const [tenantId, setTenantId] = useState('');
+  const [schemaName, setSchemaName] = useState('');
   const [loginError, setLoginError] = useState('');
   const [isLoggingIn, setIsLoggingIn] = useState(false);
   
@@ -43,31 +42,58 @@ const HomePage: React.FC = () => {
   const [captchaValue, setCaptchaValue] = useState<string | null>(null);
   const [registerError, setRegisterError] = useState('');
   const [isRegistering, setIsRegistering] = useState(false);
-  const [registrationSuccess, setRegistrationSuccess] = useState(false);
-
-  // Xử lý đăng nhập
+  const [registrationSuccess, setRegistrationSuccess] = useState(false);  // Xử lý đăng nhập
   const handleLogin = async () => {
-    if (!tenantId.trim()) {
-      setLoginError('Vui lòng nhập ID tenant');
+    // Kiểm tra trường trống
+    if (!schemaName.trim()) {
+      setLoginError('Vui lòng nhập tên tenant');
+      return;
+    }
+    
+    // Kiểm tra định dạng schema name - chỉ cho phép chữ, số và gạch dưới
+    const schemaPattern = /^[a-zA-Z0-9_]+$/;
+    if (!schemaPattern.test(schemaName)) {
+      setLoginError('Tên tenant chỉ được chứa chữ cái, số và dấu gạch dưới');
       return;
     }
     
     setIsLoggingIn(true);
     setLoginError('');
-    
-    try {
-      // Gọi API kiểm tra tenant ID
-      const response = await tenantService.checkTenantExists(tenantId);
+      try {
+      // Gọi API kiểm tra tenant schema name
+      const response = await tenantService.checkTenantExists(schemaName);
       
       if (response.exists) {
-        // Chuyển hướng đến trang đăng nhập của tenant
-        window.location.href = `https://${tenantId}.example.com/tenant/login`;
+        // Kiểm tra thông tin tenant có đầy đủ không
+        if (response.tenant && response.tenant.schema_name) {
+          // Chuyển hướng đến trang đăng nhập của tenant
+          navigate(`/tenant/login?schema=${response.tenant.schema_name}`);
+        } else {
+          throw new Error('Dữ liệu tenant không hợp lệ');
+        }
       } else {
-        setLoginError('ID tenant không tồn tại trong hệ thống');
+        setLoginError('Tên tenant không tồn tại trong hệ thống');
       }
-    } catch (error) {
-      setLoginError('Có lỗi xảy ra khi kiểm tra tenant ID');
+    } catch (error: any) {
       console.error('Login error:', error);
+      
+      // Xử lý lỗi chi tiết hơn
+      if (error.response) {
+        // Lỗi từ API response
+        if (error.response.status === 404) {
+          setLoginError('Tên tenant không tồn tại trong hệ thống');
+        } else if (error.response.status === 403) {
+          setLoginError('Tenant hiện đang bị khóa hoặc tạm ngưng');
+        } else {
+          setLoginError(`Lỗi xác thực: ${error.response.data?.message || 'Không thể kết nối đến máy chủ'}`);
+        }
+      } else if (error.request) {
+        // Lỗi không nhận được response
+        setLoginError('Không thể kết nối đến máy chủ, vui lòng kiểm tra kết nối mạng');
+      } else {
+        // Lỗi khác
+        setLoginError('Có lỗi xảy ra khi kiểm tra tên tenant');
+      }
     } finally {
       setIsLoggingIn(false);
     }
@@ -504,9 +530,7 @@ const HomePage: React.FC = () => {
             </Typography>
           </Box>
         </Container>
-      </Box>
-
-      {/* Login Dialog */}
+      </Box>      {/* Login Dialog */}
       <Dialog 
         open={loginOpen}
         onClose={() => setLoginOpen(false)}
@@ -527,24 +551,29 @@ const HomePage: React.FC = () => {
           >
             <CloseIcon />
           </IconButton>
-        </DialogTitle>
-        <DialogContent>
+        </DialogTitle>        <DialogContent>
           <Typography variant="body2" color="text.secondary" paragraph>
-            Vui lòng nhập ID tenant của bạn để đăng nhập vào hệ thống
+            Vui lòng nhập tên tenant của bạn để đăng nhập vào hệ thống
           </Typography>
+          <Box sx={{ bgcolor: 'info.lighter', p: 2, borderRadius: 1, mb: 2 }}>
+            <Typography variant="body2" color="info.main">
+              <strong>Lưu ý:</strong> Tên tenant là tên schema trong cơ sở dữ liệu. 
+              Chỉ chấp nhận chữ cái, số và dấu gạch dưới (a-z, A-Z, 0-9, _).
+            </Typography>
+          </Box>
           <TextField
             autoFocus
             margin="dense"
-            id="tenantId"
-            label="ID Tenant"
-            type="text"
-            fullWidth
+            id="schemaName"
+            label="Tên Tenant"
+            type="text"            fullWidth
             variant="outlined"
-            value={tenantId}
-            onChange={(e) => setTenantId(e.target.value)}
+            value={schemaName}
+            onChange={(e) => setSchemaName(e.target.value)}
             error={!!loginError}
             helperText={loginError}
             sx={{ mt: 1 }}
+            placeholder="company_name"
           />
         </DialogContent>
         <DialogActions sx={{ px: 3, pb: 3 }}>

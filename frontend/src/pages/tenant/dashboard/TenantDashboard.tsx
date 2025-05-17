@@ -19,7 +19,7 @@ import { useAppSelector } from '../../../hooks/redux';
 import { Grid } from '../../../components/shared';
 
 const TenantDashboard: React.FC = () => {  const navigate = useNavigate();
-  const { tenantId } = useAppSelector((state) => state.tenantAuth);
+  const { schemaName } = useAppSelector((state) => state.tenantAuth);
   const [isLoading, setIsLoading] = useState(true);
   const [stats, setStats] = useState({
     totalUsers: 0,
@@ -29,10 +29,9 @@ const TenantDashboard: React.FC = () => {  const navigate = useNavigate();
 
   useEffect(() => {
     // This would typically fetch real data from an API
-    const fetchDashboardData = async () => {
-      try {
+    const fetchDashboardData = async () => {      try {
         // In a real app, you would fetch this data from your API
-        // const response = await api.get(`/tenant/${tenantId}/dashboard/stats`);
+        // const response = await api.get(`/tenant/dashboard/stats`);
         // setStats(response.data);
         
         // Simulating API call with mock data
@@ -48,10 +47,8 @@ const TenantDashboard: React.FC = () => {  const navigate = useNavigate();
         console.error('Error fetching dashboard data:', error);
         setIsLoading(false);
       }
-    };
-
-    fetchDashboardData();
-  }, [tenantId]);
+    };    fetchDashboardData();
+  }, [schemaName]);
 
   if (isLoading) {
     return (

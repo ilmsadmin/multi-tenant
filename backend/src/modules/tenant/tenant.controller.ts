@@ -193,4 +193,21 @@ export class TenantController {
   ) {
     return this.tenantService.getTenantModule(id, moduleId);
   }
+
+  @Get('check/:schema')
+  @HttpCode(HttpStatus.OK)
+  @ApiOperation({ summary: 'Kiểm tra schema tenant có tồn tại không' })
+  @ApiParam({ name: 'schema', description: 'Schema name của tenant cần kiểm tra' })
+  @ApiResponse({ status: HttpStatus.OK, description: 'Kết quả kiểm tra' })
+  async checkSchema(@Param('schema') schema: string) {
+    const tenant = await this.tenantService.findBySchemaName(schema);
+    return {
+      exists: !!tenant,
+      tenant: tenant ? {
+        id: tenant.id,
+        name: tenant.name,
+        schema_name: tenant.schema_name
+      } : null
+    };
+  }
 }

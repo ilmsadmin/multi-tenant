@@ -3,19 +3,31 @@ import { TenantLoginRequest, TenantLoginResponse } from '../types/tenantAuth.typ
 
 export const tenantAuthService = {
   login: async (credentials: TenantLoginRequest): Promise<TenantLoginResponse> => {
-    const response = await api.post<TenantLoginResponse>('/tenant/auth/login', credentials);
+    const response = await api.post<TenantLoginResponse>(`/auth/tenant/login`, {
+      username: credentials.username,
+      password: credentials.password,
+      schemaName: credentials.schemaName
+    });
     return response.data;
   },
 
   logout: async (): Promise<void> => {
-    localStorage.removeItem('tenant_token');
-    localStorage.removeItem('tenant_user');
-    localStorage.removeItem('tenant_id');
+    try {
+      const schemaName = localStorage.getItem('schema_name');
+      if (schemaName) {
+        await api.post(`/auth/tenant/logout`);
+      }
+    } catch (error) {
+      console.error('Tenant logout error:', error);
+    } finally {
+      localStorage.removeItem('tenant_token');
+      localStorage.removeItem('tenant_user');
+      localStorage.removeItem('schema_name');
+    }
   },
-
   getCurrentUser: async (): Promise<any> => {
-    const tenantId = localStorage.getItem('tenant_id');
-    const response = await api.get(`/tenant/${tenantId}/auth/profile`);
+    const schemaName = localStorage.getItem('schema_name');
+    const response = await api.get(`/auth/tenant/profile`);
     return response.data;
   },
 };

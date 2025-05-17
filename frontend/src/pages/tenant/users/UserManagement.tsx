@@ -42,7 +42,7 @@ interface User {
 
 const UserManagement: React.FC = () => {
   const navigate = useNavigate();
-  const { tenantId } = useAppSelector((state) => state.tenantAuth);
+  const { schemaName } = useAppSelector((state) => state.tenantAuth);
   const [users, setUsers] = useState<User[]>([]);
   const [isLoading, setIsLoading] = useState(true);
   const [page, setPage] = useState(0);
@@ -75,10 +75,8 @@ const UserManagement: React.FC = () => {
         console.error('Error fetching users:', error);
         setIsLoading(false);
       }
-    };
-
-    fetchUsers();
-  }, [tenantId]);
+    };    fetchUsers();
+  }, [schemaName]);
 
   const handleChangePage = (event: unknown, newPage: number) => {
     setPage(newPage);

@@ -35,9 +35,15 @@ async function bootstrap() {
     .build();
   
   const document = SwaggerModule.createDocument(app, config);
-  SwaggerModule.setup('api/docs', app, document);
+  SwaggerModule.setup('api/docs', app, document);  
+  
   // Enable CORS
-  app.enableCors();
+  app.enableCors({
+    origin: 'http://localhost:3002',
+    methods: 'GET,HEAD,PUT,PATCH,POST,DELETE,OPTIONS',
+    credentials: true,
+    allowedHeaders: 'Content-Type,Accept,Authorization,X-Tenant-ID,X-Schema-Name'
+  });
 
   // Set up global guards
   const reflector = app.get(Reflector);

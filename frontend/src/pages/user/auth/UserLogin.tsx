@@ -11,15 +11,14 @@ const UserLogin: React.FC = () => {
   const dispatch = useAppDispatch();
   const { isLoading, error } = useAppSelector((state) => state.userAuth);
   const [loginError, setLoginError] = useState<string | null>(null);
-
   const formik = useFormik({
     initialValues: {
-      tenantId: '',
+      schemaName: '',
       username: '',
       password: '',
     },
     validationSchema: Yup.object({
-      tenantId: Yup.string().required('Tenant ID is required'),
+      schemaName: Yup.string().required('Tenant schema name is required'),
       username: Yup.string().required('Username is required'),
       password: Yup.string().required('Password is required'),
     }),
@@ -72,19 +71,18 @@ const UserLogin: React.FC = () => {
           </Alert>
         )}
 
-        <form onSubmit={formik.handleSubmit}>
-          <TextField
+        <form onSubmit={formik.handleSubmit}>          <TextField
             fullWidth
-            id="tenantId"
-            name="tenantId"
-            label="Tenant ID"
+            id="schemaName"
+            name="schemaName"
+            label="Tenant Schema Name"
             variant="outlined"
             margin="normal"
-            value={formik.values.tenantId}
+            value={formik.values.schemaName}
             onChange={formik.handleChange}
             onBlur={formik.handleBlur}
-            error={formik.touched.tenantId && Boolean(formik.errors.tenantId)}
-            helperText={formik.touched.tenantId && formik.errors.tenantId}
+            error={formik.touched.schemaName && Boolean(formik.errors.schemaName)}
+            helperText={formik.touched.schemaName && formik.errors.schemaName}
           />
 
           <TextField

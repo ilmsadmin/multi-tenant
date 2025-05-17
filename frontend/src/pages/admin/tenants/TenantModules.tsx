@@ -37,15 +37,19 @@ const TenantModules: React.FC = () => {
   const { selectedTenant } = useAppSelector((state) => state.tenants);
   const { modules, tenantModules, isLoading, error } = useAppSelector((state) => state.modules);
   
-  const [alertMessage, setAlertMessage] = useState<{type: 'success' | 'error', message: string} | null>(null);
-
-  useEffect(() => {
+  const [alertMessage, setAlertMessage] = useState<{type: 'success' | 'error', message: string} | null>(null);  useEffect(() => {
     if (tenantId) {
       dispatch(fetchTenantById(parseInt(tenantId)));
       dispatch(fetchModules());
-      dispatch(fetchTenantModules(parseInt(tenantId)));
     }
   }, [dispatch, tenantId]);
+
+  // Theo dõi sự thay đổi của selectedTenant để lấy modules
+  useEffect(() => {
+    if (selectedTenant && selectedTenant.schema_name) {
+      dispatch(fetchTenantModules(selectedTenant.schema_name));
+    }
+  }, [dispatch, selectedTenant]);
 
   useEffect(() => {
     if (error) {
@@ -56,18 +60,16 @@ const TenantModules: React.FC = () => {
       }, 5000);
     }
   }, [error, dispatch]);
-
   const handleModuleStatusChange = async (moduleId: number, checked: boolean) => {
-    if (!tenantId) return;
+    if (!tenantId || !selectedTenant?.schema_name) return;
     
     const tenantModule = tenantModules.find(
-      tm => tm.module_id === moduleId && tm.tenant_id === parseInt(tenantId)
+      tm => tm.module_id === moduleId && tm.schema_name === selectedTenant.schema_name
     );
     
-    if (tenantModule) {
-      // Update existing tenant module
+    if (tenantModule) {      // Update existing tenant module
       const resultAction = await dispatch(updateTenantModuleStatus({
-        tenantId: parseInt(tenantId),
+        schemaName: selectedTenant?.schema_name || '',
         moduleId: moduleId,
         status: checked ? 'active' : 'inactive'
       }));
@@ -78,10 +80,9 @@ const TenantModules: React.FC = () => {
           message: `Module ${checked ? 'activated' : 'deactivated'} successfully` 
         });
       }
-    } else {
-      // Create new tenant module activation
+    } else {      // Create new tenant module activation
       const resultAction = await dispatch(activateModuleForTenant({
-        tenant_id: parseInt(tenantId),
+        schema_name: selectedTenant?.schema_name || '',
         module_id: moduleId,
         status: checked ? 'active' : 'inactive'
       }));

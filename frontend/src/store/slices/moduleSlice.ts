@@ -76,9 +76,9 @@ export const deleteModule = createAsyncThunk(
 // Async thunks for tenant modules
 export const fetchTenantModules = createAsyncThunk(
   'modules/fetchTenantModules',
-  async (tenantId: number, { rejectWithValue }) => {
+  async (schemaName: string, { rejectWithValue }) => {
     try {
-      return await moduleService.getTenantModules(tenantId);
+      return await moduleService.getTenantModules(schemaName);
     } catch (error: any) {
       return rejectWithValue(error.response?.data?.message || 'Failed to fetch tenant modules');
     }
@@ -99,12 +99,12 @@ export const activateModuleForTenant = createAsyncThunk(
 export const updateTenantModuleStatus = createAsyncThunk(
   'modules/updateTenantModuleStatus',
   async (
-    { tenantId, moduleId, status }: 
-    { tenantId: number, moduleId: number, status: 'active' | 'inactive' }, 
+    { schemaName, moduleId, status }: 
+    { schemaName: string, moduleId: number, status: 'active' | 'inactive' }, 
     { rejectWithValue }
   ) => {
     try {
-      return await moduleService.updateTenantModuleStatus(tenantId, moduleId, status);
+      return await moduleService.updateTenantModuleStatus(schemaName, moduleId, status);
     } catch (error: any) {
       return rejectWithValue(error.response?.data?.message || 'Failed to update tenant module status');
     }

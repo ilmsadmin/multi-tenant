@@ -12,10 +12,11 @@ export class TenantSchemaMiddleware implements NestMiddleware {
   constructor(
     private readonly tenantService: TenantService,
     private readonly dataSource: DataSource,
-  ) {}
-  async use(req: Request, res: Response, next: NextFunction) {
+  ) {}  async use(req: Request, res: Response, next: NextFunction) {
     this.logger.debug(`Processing request path: ${req.path}, method: ${req.method}`);
     this.logger.debug(`Headers: ${JSON.stringify(req.headers)}`);
+    this.logger.debug(`Query params: ${JSON.stringify(req.query)}`);
+    this.logger.debug(`Body: ${JSON.stringify(req.body)}`);
 
     // Nếu đường dẫn là từ API hệ thống thì không cần xử lý tenant
     if (this.isSystemRoute(req.path)) {
@@ -28,24 +29,47 @@ export class TenantSchemaMiddleware implements NestMiddleware {
     // Thứ tự ưu tiên: 
     // 1. x-tenant-id header
     // 2. tenant_id query param
-    // 3. domain từ hostname
-    const tenantId = req.headers['x-tenant-id'] as string || req.query.tenant_id as string;
+    // 3. tenant_id từ body (nếu có)
+    // 4. schema_name từ query param hoặc URL
+    // 5. domain từ hostname
+    const tenantIdHeader = req.headers['x-tenant-id'] as string; 
+    const tenantIdQuery = req.query.tenant_id as string;
+    const tenantIdBody = req.body?.tenantId;
+    const schemaNameQuery = req.query.schema as string;
+    const schemaNamePath = this.extractSchemaFromPath(req.path);
+    
+    const tenantId = tenantIdHeader || tenantIdQuery || tenantIdBody;
+    const schemaName = schemaNameQuery || schemaNamePath;
     const tenantDomain = this.extractDomain(req);
     
-    this.logger.debug(`Tenant identification - ID: ${tenantId || 'not provided'}, Domain: ${tenantDomain || 'not provided'}`);
+    this.logger.log(`[TENANT DEBUG] Request path: ${req.path}, method: ${req.method}`);
+    this.logger.log(`[TENANT DEBUG] Tenant ID from header: ${tenantIdHeader || 'not provided'}`);
+    this.logger.log(`[TENANT DEBUG] Tenant ID from query: ${tenantIdQuery || 'not provided'}`);
+    this.logger.log(`[TENANT DEBUG] Tenant ID from body: ${tenantIdBody || 'not provided'}`);
+    this.logger.log(`[TENANT DEBUG] Schema name from query: ${schemaNameQuery || 'not provided'}`);
+    this.logger.log(`[TENANT DEBUG] Schema name from path: ${schemaNamePath || 'not provided'}`);
+    this.logger.log(`[TENANT DEBUG] Final Tenant ID used: ${tenantId || 'not provided'}`);
+    this.logger.log(`[TENANT DEBUG] Final Schema name used: ${schemaName || 'not provided'}`);
+    this.logger.debug(`Tenant identification - ID: ${tenantId || 'not provided'}, Schema: ${schemaName || 'not provided'}, Domain: ${tenantDomain || 'not provided'}`);
 
     try {
       if (tenantId) {
         // Tìm tenant theo ID
         this.logger.debug(`Attempting to find tenant by ID: ${tenantId}`);
         tenant = await this.tenantService.findOne(parseInt(tenantId, 10));
+      } else if (schemaName) {
+        // Tìm tenant theo schema name
+        this.logger.debug(`Attempting to find tenant by schema name: ${schemaName}`);
+        tenant = await this.tenantService.findBySchemaName(schemaName);
       } else if (tenantDomain) {
         // Tìm tenant theo domain
         this.logger.debug(`Attempting to find tenant by domain: ${tenantDomain}`);
         tenant = await this.tenantService.findByDomain(tenantDomain);
+      }      if (tenant) {
+        this.logger.log(`[TENANT DEBUG] Found tenant ${tenant.id} (${tenant.name}) with schema ${tenant.schema_name}`);
+      } else {
+        this.logger.log(`[TENANT DEBUG] Tenant lookup failed - Could not find tenant with ID: ${tenantId}`);
       }
-
-      this.logger.debug(`Tenant lookup result: ${tenant ? `Found - Name: ${tenant.name}, ID: ${tenant.id}, Schema: ${tenant.schema_name}` : 'Not found'}`);
 
       if (!tenant) {
         // Nếu không tìm thấy tenant, đối với API tenant thì chạy trong schema public
@@ -129,6 +153,18 @@ export class TenantSchemaMiddleware implements NestMiddleware {
         // Trường hợp tenant.example.com
         return parts[0];
       }
+    }
+
+    return null;
+  }
+
+  private extractSchemaFromPath(path: string): string | null {
+    // Tìm schema từ path pattern /tenants/check/:schema
+    const checkSchemaPattern = /\/tenants\/check\/([^\/]+)/;
+    const match = path.match(checkSchemaPattern);
+    
+    if (match && match[1]) {
+      return match[1];
     }
 
     return null;

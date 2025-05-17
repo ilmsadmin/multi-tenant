@@ -438,12 +438,30 @@ export class AuthService {
       throw error;
     }
   }
-  
-  /**
+    /**
    * Đăng nhập với quyền admin của tenant
    */
   async tenantAdminLogin(tenantId: string, username: string, password: string) {
     try {
+      this.logger.log(`[AUTH SERVICE] Tenant admin login attempt - Tenant ID: ${tenantId}, Username: ${username}`);
+      
+      if (!tenantId) {
+        this.logger.error(`[AUTH SERVICE] Missing tenantId for login attempt`);
+        throw new BadRequestException('Tenant ID không được cung cấp');
+      }
+      
+      try {
+        // Kiểm tra trước xem tenant có tồn tại không
+        const numericTenantId = parseInt(tenantId, 10);
+        if (isNaN(numericTenantId)) {
+          this.logger.error(`[AUTH SERVICE] Invalid tenant ID format: ${tenantId}`);
+          throw new BadRequestException('Tenant ID không hợp lệ');
+        }
+      } catch (error) {
+        this.logger.error(`[AUTH SERVICE] Error checking tenant: ${error.message}`);
+        throw error;
+      }
+      
       this.logger.debug(`Tenant admin login attempt: tenant=${tenantId}, username=${username}`);
       
       const user = await this.validateUser(Number(tenantId), username, password);

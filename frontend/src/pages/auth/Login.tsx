@@ -10,16 +10,16 @@ const Login: React.FC = () => {
   const navigate = useNavigate();
   const dispatch = useAppDispatch();
   const { isLoading, error } = useAppSelector((state) => state.auth);
-  const [loginError, setLoginError] = useState<string | null>(null);
-
-  const formik = useFormik({
+  const [loginError, setLoginError] = useState<string | null>(null);  const formik = useFormik({
     initialValues: {
       username: '',
       password: '',
+      schemaName: 'default_tenant', // Sử dụng tên schema mặc định thay vì ID
     },
     validationSchema: Yup.object({
       username: Yup.string().required('Username is required'),
       password: Yup.string().required('Password is required'),
+      schemaName: Yup.string().required('Tenant name is required'),
     }),
     onSubmit: async (values) => {
       setLoginError(null);
@@ -57,8 +57,7 @@ const Login: React.FC = () => {
         <Box sx={{ mb: 3, textAlign: 'center' }}>
           <Typography variant="h4" component="h1" gutterBottom>
             System Admin
-          </Typography>
-          <Typography variant="subtitle1" color="text.secondary">
+          </Typography>          <Typography variant="subtitle1" color="text.secondary">
             Login to manage your multi-tenant system
           </Typography>
         </Box>
@@ -69,7 +68,20 @@ const Login: React.FC = () => {
           </Alert>
         )}
 
-        <form onSubmit={formik.handleSubmit}>
+        <form onSubmit={formik.handleSubmit}>          <TextField
+            fullWidth
+            id="schemaName"
+            name="schemaName"
+            label="Tenant Name"
+            variant="outlined"
+            margin="normal"
+            value={formik.values.schemaName}
+            onChange={formik.handleChange}
+            onBlur={formik.handleBlur}
+            error={formik.touched.schemaName && Boolean(formik.errors.schemaName)}
+            helperText={formik.touched.schemaName && formik.errors.schemaName}
+          />
+
           <TextField
             fullWidth
             id="username"

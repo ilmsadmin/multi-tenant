@@ -42,7 +42,7 @@ interface Role {
 
 const RoleManagement: React.FC = () => {
   const navigate = useNavigate();
-  const { tenantId } = useAppSelector((state) => state.tenantAuth);
+  const { schemaName } = useAppSelector((state) => state.tenantAuth);
   const [roles, setRoles] = useState<Role[]>([]);
   const [isLoading, setIsLoading] = useState(true);
   const [page, setPage] = useState(0);
@@ -105,10 +105,8 @@ const RoleManagement: React.FC = () => {
         console.error('Error fetching roles:', error);
         setIsLoading(false);
       }
-    };
-
-    fetchRoles();
-  }, [tenantId]);
+    };    fetchRoles();
+  }, [schemaName]);
 
   const handleChangePage = (event: unknown, newPage: number) => {
     setPage(newPage);

@@ -10,6 +10,7 @@ export interface Module {
 export interface TenantModule {
   id: number;
   tenant_id: number;
+  schema_name?: string;
   module_id: number;
   module_name?: string;
   status: 'active' | 'inactive';
@@ -30,7 +31,7 @@ export interface UpdateModuleRequest {
 }
 
 export interface TenantModuleActivationRequest {
-  tenant_id: number;
+  schema_name: string;
   module_id: number;
   status: 'active' | 'inactive';
 }

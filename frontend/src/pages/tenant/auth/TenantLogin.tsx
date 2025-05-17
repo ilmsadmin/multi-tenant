@@ -1,5 +1,5 @@
-import React, { useState } from 'react';
-import { useNavigate } from 'react-router-dom';
+import React, { useState, useEffect } from 'react';
+import { useNavigate, useLocation } from 'react-router-dom';
 import { useAppDispatch, useAppSelector } from '../../../hooks/redux';
 import { tenantLogin } from '../../../store/slices/tenantAuthSlice';
 import { Box, Paper, Typography, TextField, Button, Alert, CircularProgress } from '@mui/material';
@@ -8,18 +8,23 @@ import * as Yup from 'yup';
 
 const TenantLogin: React.FC = () => {
   const navigate = useNavigate();
+  const location = useLocation();
   const dispatch = useAppDispatch();
   const { isLoading, error } = useAppSelector((state) => state.tenantAuth);
   const [loginError, setLoginError] = useState<string | null>(null);
-
+  
+  // Lấy tham số schema từ URL
+  const queryParams = new URLSearchParams(location.search);
+  const schemaFromUrl = queryParams.get('schema') || '';
+  
   const formik = useFormik({
     initialValues: {
-      tenantId: '',
+      schemaName: schemaFromUrl,
       username: '',
       password: '',
     },
     validationSchema: Yup.object({
-      tenantId: Yup.string().required('Tenant ID is required'),
+      schemaName: Yup.string().required('Tenant name is required'),
       username: Yup.string().required('Username is required'),
       password: Yup.string().required('Password is required'),
     }),
@@ -28,9 +33,8 @@ const TenantLogin: React.FC = () => {
       try {
         const resultAction = await dispatch(tenantLogin(values));
         if (tenantLogin.fulfilled.match(resultAction)) {
-          navigate('/tenant/dashboard');
-        } else {
-          setLoginError('Invalid tenant ID, username or password');
+          navigate('/tenant/dashboard');        } else {
+          setLoginError('Invalid tenant name, username or password');
         }
       } catch (error) {
         setLoginError('An error occurred during login');
@@ -71,19 +75,18 @@ const TenantLogin: React.FC = () => {
           </Alert>
         )}
 
-        <form onSubmit={formik.handleSubmit}>
-          <TextField
+        <form onSubmit={formik.handleSubmit}>          <TextField
             fullWidth
-            id="tenantId"
-            name="tenantId"
-            label="Tenant ID"
+            id="schemaName"
+            name="schemaName"
+            label="Tenant Name"
             variant="outlined"
             margin="normal"
-            value={formik.values.tenantId}
+            value={formik.values.schemaName}
             onChange={formik.handleChange}
             onBlur={formik.handleBlur}
-            error={formik.touched.tenantId && Boolean(formik.errors.tenantId)}
-            helperText={formik.touched.tenantId && formik.errors.tenantId}
+            error={formik.touched.schemaName && Boolean(formik.errors.schemaName)}
+            helperText={formik.touched.schemaName && formik.errors.schemaName}
           />
 
           <TextField

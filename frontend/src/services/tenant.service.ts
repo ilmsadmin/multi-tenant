@@ -16,13 +16,18 @@ interface RegisterFreeTrialRequest {
 interface CheckTenantResponse {
   exists: boolean;
   domain?: string;
+  tenant?: {
+    id: number;
+    name: string;
+    schema_name: string;
+  };
 }
 
 // Interface cho response đăng ký tenant
 interface RegisterTenantResponse {
   success: boolean;
   message: string;
-  tenantId?: string;
+  schemaName?: string;
 }
 
 export const tenantService = {
@@ -49,14 +54,14 @@ export const tenantService = {
   deleteTenant: async (id: number): Promise<void> => {
     await api.delete(`/tenants/${id}`);
   },
-  
   /**
-   * Kiểm tra tenant ID có tồn tại trong hệ thống hay không
-   * @param tenantId ID của tenant cần kiểm tra
+   * Kiểm tra tên schema tenant có tồn tại trong hệ thống hay không
+   * @param schemaName Tên schema của tenant cần kiểm tra
    * @returns Thông tin về tenant
    */
-  checkTenantExists: async (tenantId: string): Promise<CheckTenantResponse> => {
-    const response = await api.get<CheckTenantResponse>(`/tenants/check/${tenantId}`);
+  checkTenantExists: async (schemaName: string): Promise<CheckTenantResponse> => {
+    // Sử dụng đường dẫn rõ ràng với tên schema trong URL, không phụ thuộc vào interceptor
+    const response = await api.get<CheckTenantResponse>(`/tenants/check/${schemaName}`);
     return response.data;
   },
 

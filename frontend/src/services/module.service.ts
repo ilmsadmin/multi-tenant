@@ -31,20 +31,17 @@ export const moduleService = {
   deleteModule: async (id: number): Promise<void> => {
     await api.delete(`/modules/${id}`);
   },
-
   // Tenant module activation
-  getTenantModules: async (tenantId: number): Promise<TenantModule[]> => {
-    const response = await api.get<TenantModule[]>(`/tenants/${tenantId}/modules`);
+  getTenantModules: async (schemaName: string): Promise<TenantModule[]> => {
+    const response = await api.get<TenantModule[]>(`/tenants/${schemaName}/modules`);
     return response.data;
   },
-
   activateModuleForTenant: async (data: TenantModuleActivationRequest): Promise<TenantModule> => {
-    const response = await api.post<TenantModule>(`/tenants/${data.tenant_id}/modules`, data);
+    const response = await api.post<TenantModule>(`/tenants/${data.schema_name}/modules`, data);
     return response.data;
   },
-
-  updateTenantModuleStatus: async (tenantId: number, moduleId: number, status: 'active' | 'inactive'): Promise<TenantModule> => {
-    const response = await api.patch<TenantModule>(`/tenants/${tenantId}/modules/${moduleId}`, { status });
+  updateTenantModuleStatus: async (schemaName: string, moduleId: number, status: 'active' | 'inactive'): Promise<TenantModule> => {
+    const response = await api.patch<TenantModule>(`/tenants/${schemaName}/modules/${moduleId}`, { status });
     return response.data;
   }
 };

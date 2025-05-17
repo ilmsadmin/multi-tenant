@@ -37,7 +37,7 @@ interface Module {
 }
 
 const ModuleConfiguration: React.FC = () => {
-  const { tenantId } = useAppSelector((state) => state.tenantAuth);
+  const { schemaName } = useAppSelector((state) => state.tenantAuth);
   const [modules, setModules] = useState<Module[]>([]);
   const [isLoading, setIsLoading] = useState(true);
   const [selectedModule, setSelectedModule] = useState<Module | null>(null);
@@ -120,15 +120,12 @@ const ModuleConfiguration: React.FC = () => {
         console.error('Error fetching modules:', error);
         setIsLoading(false);
       }
-    };
-
-    fetchModules();
-  }, [tenantId]);
-
+    };    fetchModules();
+  }, [schemaName]);
   const handleModuleToggle = async (moduleId: number, newStatus: boolean) => {
     try {
       // In a real app, you would call your API to update the module status
-      // await api.patch(`/tenant/${tenantId}/modules/${moduleId}`, { isEnabled: newStatus });
+      // await api.patch(`/tenant/modules/${moduleId}`, { isEnabled: newStatus });
       
       // Update local state
       setModules(modules.map(module => 

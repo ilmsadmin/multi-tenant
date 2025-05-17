@@ -20,14 +20,14 @@ export interface EndUser {
 export interface UserAuthState {
   user: EndUser | null;
   token: string | null;
-  tenantId: string | null;
+  schemaName: string | null;
   isAuthenticated: boolean;
   isLoading: boolean;
   error: string | null;
 }
 
 export interface UserLoginRequest {
-  tenantId: string;
+  schemaName: string;
   username: string;
   password: string;
 }
