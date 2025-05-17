@@ -131,12 +131,12 @@ export class TenantSchemaMiddleware implements NestMiddleware {
       });
     }
   }
-
   private isSystemRoute(path: string): boolean {
     // Các route quản lý hệ thống không cần tenant schema
     return path.startsWith('/api/docs') || 
            path === '/api/health' || 
-           path.startsWith('/api/system');
+           path.startsWith('/api/system') ||
+           path.startsWith('/api/auth/system');
   }
 
   private extractDomain(req: Request): string | null {

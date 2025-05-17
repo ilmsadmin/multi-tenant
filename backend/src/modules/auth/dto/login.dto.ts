@@ -1,5 +1,5 @@
-import { IsNotEmpty, IsString } from 'class-validator';
-import { ApiProperty } from '@nestjs/swagger';
+import { IsNotEmpty, IsString, IsOptional } from 'class-validator';
+import { ApiProperty, ApiPropertyOptional } from '@nestjs/swagger';
 
 export class LoginDto {
   @ApiProperty({ description: 'Tên đăng nhập', example: 'johndoe' })
@@ -11,4 +11,9 @@ export class LoginDto {
   @IsString()
   @IsNotEmpty()
   password: string;
+
+  @ApiPropertyOptional({ description: 'Tên schema của tenant', example: 'default_tenant' })
+  @IsString()
+  @IsOptional()
+  schemaName?: string;
 }
