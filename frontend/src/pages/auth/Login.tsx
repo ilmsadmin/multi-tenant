@@ -20,15 +20,16 @@ const Login: React.FC = () => {
       username: Yup.string().required('Username is required'),
       password: Yup.string().required('Password is required'),
       schemaName: Yup.string().required('Tenant name is required'),
-    }),
-    onSubmit: async (values) => {
+    }),    onSubmit: async (values) => {
       setLoginError(null);
       try {
         const resultAction = await dispatch(login(values));
         if (login.fulfilled.match(resultAction)) {
           navigate('/admin/dashboard');
-        } else {
-          setLoginError('Invalid username or password');
+        } else if (login.rejected.match(resultAction)) {
+          // Handle the rejected action properly
+          const errorMessage = resultAction.payload || 'Invalid username or password';
+          setLoginError(typeof errorMessage === 'string' ? errorMessage : 'Authentication failed');
         }
       } catch (error) {
         setLoginError('An error occurred during login');
@@ -68,7 +69,10 @@ const Login: React.FC = () => {
           </Alert>
         )}
 
-        <form onSubmit={formik.handleSubmit}>          <TextField
+        <form onSubmit={(e) => {
+          e.preventDefault();
+          formik.handleSubmit(e);
+        }}>          <TextField
             fullWidth
             id="schemaName"
             name="schemaName"
