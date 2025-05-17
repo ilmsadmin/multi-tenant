@@ -97,9 +97,9 @@
 ## 4. Testing
 
 ### 4.1. Backend Testing
-- [ ] Unit tests cho các service
-- [ ] Integration tests cho APIs
-- [ ] Database migration tests
+- [x] Unit tests cho các service
+- [x] Integration tests cho APIs
+- [x] Database migration tests
 
 ### 4.2. Frontend Testing
 - [ ] Component tests

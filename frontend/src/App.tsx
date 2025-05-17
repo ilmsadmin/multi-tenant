@@ -1,5 +1,5 @@
 import React from 'react';
-import { BrowserRouter as Router, Routes, Route, Navigate } from 'react-router-dom';
+import { createBrowserRouter, RouterProvider, Navigate } from 'react-router-dom';
 import { Provider } from 'react-redux';
 import { store } from './store';
 import { ThemeProvider, createTheme } from '@mui/material/styles';
@@ -193,62 +193,97 @@ const UserAuthGuard = ({ children }: { children: React.ReactNode }) => {
 };
 
 function App() {
+  // Create the router with future flags enabled
+  const router = createBrowserRouter([
+    // Home route
+    {
+      path: "/",
+      element: <HomePage />
+    },
+    
+    // Admin routes
+    {
+      path: "/login",
+      element: <Login />
+    },
+    {
+      path: "/admin",
+      element: (
+        <AdminAuthGuard>
+          <AdminLayout />
+        </AdminAuthGuard>
+      ),
+      children: [
+        { path: "dashboard", element: <AdminDashboard /> },
+        { path: "tenants", element: <TenantManagement /> },
+        { path: "tenants/:tenantId/modules", element: <TenantModules /> },
+        { path: "packages", element: <PackageManagement /> },
+        { path: "modules", element: <ModuleManagement /> }
+      ]
+    },
+    
+    // Tenant routes
+    {
+      path: "/tenant/login",
+      element: <TenantLogin />
+    },
+    {
+      path: "/tenant",
+      element: (
+        <TenantAuthGuard>
+          <TenantLayout />
+        </TenantAuthGuard>
+      ),
+      children: [
+        { path: "dashboard", element: <TenantDashboard /> },
+        { path: "users", element: <UserManagement /> },
+        { path: "roles", element: <RoleManagement /> },
+        { path: "modules", element: <ModuleConfiguration /> }
+      ]
+    },
+    
+    // User routes
+    {
+      path: "/user/login",
+      element: <UserLogin />
+    },
+    {
+      path: "/user",
+      element: (
+        <UserAuthGuard>
+          <UserLayout />
+        </UserAuthGuard>
+      ),
+      children: [
+        { path: "dashboard", element: <UserDashboard /> },
+        { path: "profile", element: <UserProfile /> },
+        { path: "settings", element: <UserSettings /> },
+        { path: "crm", element: <CrmModule /> },
+        { path: "hrm", element: <HrmModule /> },
+        { path: "analytics", element: <AnalyticsModule /> },
+        { path: "inventory", element: <InventoryModule /> }
+      ]
+    },
+    
+    // Fallback route
+    {
+      path: "*",
+      element: <Navigate to="/" replace />
+    }
+  ], {
+    future: {
+      v7_relativeSplatPath: true
+    }
+  });
+
   return (
     <Provider store={store}>
       <ThemeProvider theme={theme}>
         <CssBaseline />
-        <Router>
-          <Routes>
-            {/* Home route */}
-            <Route path="/" element={<HomePage />} />
-            
-            {/* Admin routes */}
-            <Route path="/login" element={<Login />} />
-            <Route path="/admin" element={
-              <AdminAuthGuard>
-                <AdminLayout />
-              </AdminAuthGuard>
-            }>
-              <Route path="dashboard" element={<AdminDashboard />} />
-              <Route path="tenants" element={<TenantManagement />} />
-              <Route path="tenants/:tenantId/modules" element={<TenantModules />} />
-              <Route path="packages" element={<PackageManagement />} />
-              <Route path="modules" element={<ModuleManagement />} />
-            </Route>
-            
-            {/* Tenant routes */}
-            <Route path="/tenant/login" element={<TenantLogin />} />
-            <Route path="/tenant" element={
-              <TenantAuthGuard>
-                <TenantLayout />
-              </TenantAuthGuard>
-            }>
-              <Route path="dashboard" element={<TenantDashboard />} />
-              <Route path="users" element={<UserManagement />} />
-              <Route path="roles" element={<RoleManagement />} />
-              <Route path="modules" element={<ModuleConfiguration />} />
-            </Route>
-            
-            {/* User routes */}
-            <Route path="/user/login" element={<UserLogin />} />
-            <Route path="/user" element={
-              <UserAuthGuard>
-                <UserLayout />
-              </UserAuthGuard>
-            }>
-              <Route path="dashboard" element={<UserDashboard />} />
-              <Route path="profile" element={<UserProfile />} />
-              <Route path="settings" element={<UserSettings />} />
-              <Route path="crm" element={<CrmModule />} />
-              <Route path="hrm" element={<HrmModule />} />
-              <Route path="analytics" element={<AnalyticsModule />} />
-              <Route path="inventory" element={<InventoryModule />} />
-            </Route>
-
-            {/* Fallback routes */}
-            <Route path="*" element={<Navigate to="/" />} />
-          </Routes>
-        </Router>
+        <RouterProvider 
+          router={router} 
+          future={{ v7_startTransition: true }}
+        />
       </ThemeProvider>
     </Provider>
   );
