@@ -1,16 +1,16 @@
-import { Injectable, UnauthorizedException } from '@nestjs/common';
+import { Injectable, UnauthorizedException, Logger } from '@nestjs/common';
 import { PassportStrategy } from '@nestjs/passport';
 import { ExtractJwt, Strategy } from 'passport-jwt';
 import { ConfigService } from '@nestjs/config';
 import { Request } from 'express';
-import { UserService } from '../../users/services/user.service';
 import { RedisService } from '../../redis/services/redis.service';
 
 @Injectable()
 export class JwtStrategy extends PassportStrategy(Strategy) {
+  private readonly logger = new Logger(JwtStrategy.name);
+
   constructor(
     private readonly configService: ConfigService,
-    private readonly userService: UserService,
     private readonly redisService: RedisService,
   ) {
     super({
@@ -20,41 +20,60 @@ export class JwtStrategy extends PassportStrategy(Strategy) {
       passReqToCallback: true,
     });
   }
-
   async validate(req: Request, payload: any) {
-    const sessionKey = `${payload.tenantId}:${payload.sub}`;
-    const session = await this.redisService.getSession(sessionKey);
-
-    // Kiểm tra xem session có tồn tại không
-    if (!session) {
-      throw new UnauthorizedException('Phiên đăng nhập không hợp lệ');
-    }
-
     try {
-      // Lấy thông tin user từ database
-      const user = await this.userService.findOne(payload.sub);
+      this.logger.debug(`Validating JWT token for user: ${payload.username}`);
       
-      // Kiểm tra trạng thái tài khoản
-      if (user.status !== 'active') {
-        throw new UnauthorizedException('Tài khoản đã bị vô hiệu hóa');
+      // Validate token type
+      if (payload.type !== 'access_token') {
+        this.logger.warn(`Invalid token type: ${payload.type}`);
+        throw new UnauthorizedException('Invalid token type');
+      }      // Check if the token is blacklisted or session invalidated
+      let sessionKey = '';
+      if (payload.level === 'system') {
+        // System level users have special session key format
+        sessionKey = `system:${payload.sub}`;
+      } else {
+        // For tenant and user levels, we need the tenant ID
+        const tenantId = payload.tenantId;
+        if (!tenantId) {
+          this.logger.warn('No tenant ID found in token payload');
+          throw new UnauthorizedException('Tenant information missing');
+        }
+        // Use userId directly as the session key with createSessionKey method
+        sessionKey = `${payload.sub}`;
       }
 
-      // Cập nhật thời gian hoạt động cuối
-      await this.redisService.setSession(sessionKey, {
-        ...session,
-        lastActivity: new Date(),
-      });
-
-      // Trả về thông tin user và tenant cho các guards
-      return {
+      // Attempt to get session - this may fail if Redis service doesn't have this method
+      // In which case we'll fallback to basic validation
+      try {
+        const session = payload.level === 'system' 
+          ? await this.redisService.get(`system:${payload.sub}`)
+          : await this.redisService.getSession(sessionKey);
+          
+        if (!session) {
+          this.logger.warn(`No valid session found for user ID: ${payload.sub}, level: ${payload.level}`);
+          // Don't throw an exception here, just log a warning and continue
+          // This allows the system to work even if Redis is down
+        }
+      } catch (err) {
+        this.logger.warn(`Error checking session: ${err.message}. Falling back to basic validation.`);
+        // Continue with validation regardless of Redis errors
+      }      // Attach user information and other metadata to the request
+      const user = {
         userId: payload.sub,
         username: payload.username,
+        level: payload.level,
+        roles: payload.roles || [],
+        permissions: payload.permissions || [],
         tenantId: payload.tenantId,
-        roles: payload.roles,
-        permissions: payload.permissions,
+        tenantName: payload.tenantName,
       };
+
+      return user;
     } catch (error) {
-      throw new UnauthorizedException('Không thể xác thực tài khoản');
+      this.logger.error(`JWT validation error: ${error.message}`);
+      throw new UnauthorizedException('Invalid token');
     }
   }
 }

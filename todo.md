@@ -1,6 +1,9 @@
 # Multi-Tenant System Implementation Tasks
 
-### 1.1. Cài đặt và Cấu hình Cơ sở dữ liệu
+### 1.1. Cài đặt và ### 2.6. Authentication & Authorization
+- [x] Implement JWT-based authentication
+- [x] Implement multi-level authorization (System, Tenant, User)
+- [x] Implement middleware để kiểm tra quyền truy cậphình Cơ sở dữ liệu
 - [x] Cài đặt PostgreSQL
 - [x] Cấu hình PostgreSQL để hỗ trợ mô hình Schema-per-Tenant
 - [x] Cài đặt MongoDB

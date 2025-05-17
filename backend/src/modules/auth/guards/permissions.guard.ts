@@ -5,7 +5,6 @@ import { PERMISSIONS_KEY } from '../decorators/permissions.decorator';
 @Injectable()
 export class PermissionsGuard implements CanActivate {
   constructor(private reflector: Reflector) {}
-
   canActivate(context: ExecutionContext): boolean {
     const requiredPermissions = this.reflector.getAllAndOverride<string[]>(PERMISSIONS_KEY, [
       context.getHandler(),
@@ -19,7 +18,17 @@ export class PermissionsGuard implements CanActivate {
     
     const { user } = context.switchToHttp().getRequest();
     
-    if (!user || !user.permissions) {
+    if (!user) {
+      return false;
+    }
+    
+    // Cấp System luôn có tất cả quyền
+    if (user.level === 'system') {
+      return true;
+    }
+    
+    // Kiểm tra xem người dùng có danh sách quyền không
+    if (!Array.isArray(user.permissions)) {
       return false;
     }
     

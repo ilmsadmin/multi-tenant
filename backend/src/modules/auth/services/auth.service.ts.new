@@ -214,49 +214,40 @@ export class AuthService {
       throw error;
     }
   }
+  
   /**
    * Đăng xuất người dùng
    */
-  async logout(userId: string | number, level: string, tenantId?: string | number): Promise<{ success: boolean }> {
+  async logout(userId: string | number, tenantId: string | number, level: string): Promise<{ success: boolean }> {
     try {
-      this.logger.debug(`Logout attempt for user ${userId}, tenant ${tenantId || 'system'}, level ${level}`);
+      this.logger.debug(`Logout attempt for user ${userId}, tenant ${tenantId}, level ${level}`);
       
-      // Xóa session từ Redis sử dụng phương thức cải tiến
-      try {
-        await this.redisService.invalidateSession(String(userId), level, tenantId);
-        this.logger.debug(`Session successfully invalidated for user ${userId}`);
-      } catch (redisError) {
-        this.logger.error(`Error invalidating session: ${redisError.message}`);
-        // Continue with logout process even if session invalidation fails
-      }
+      // Xóa session từ Redis
+      const sessionKey = `${tenantId}:${userId}:${level}`;
+      await this.redisService.invalidateSession(sessionKey);
       
       // Ghi log đăng xuất
       if (level === 'system') {
-        try {
-          await this.systemLogService.log({
-            action: 'system_logout',
-            user_id: String(userId),
-            details: {
-              level,
-            },
-          });
-        } catch (logError) {
-          this.logger.error(`Error logging system logout: ${logError.message}`);
-        }
-      } else {
-        try {
-          await this.activityLogService.log({
-            user_id: String(userId),
+        await this.systemLogService.log({
+          action: 'system_logout',
+          user_id: String(userId),
+          details: {
             tenant_id: String(tenantId),
-            action: `${level}_logout`,            entity: 'auth',
-            entity_id: null,            changes: {
-              timestamp: new Date(),
-              level
-            },
-          });
-        } catch (logError) {
-          this.logger.error(`Error logging user logout: ${logError.message}`);
-        }
+            level,
+          },
+        });
+      } else {
+        await this.activityLogService.log({
+          user_id: String(userId),
+          tenant_id: String(tenantId),
+          action: `${level}_logout`,
+          entity: 'auth',
+          entity_id: null,
+          changes: {
+            timestamp: new Date(),
+            level,
+          },
+        });
       }
       
       return { success: true };
@@ -265,7 +256,8 @@ export class AuthService {
       return { success: false };
     }
   }
-    /**
+  
+  /**
    * Làm mới token
    */
   async refreshToken(refreshToken: string, level: string, tenantId?: string | number): Promise<any> {
@@ -296,19 +288,11 @@ export class AuthService {
       }
       
       // Check if session exists in Redis
-      let sessionKey;
-      if (level === 'system') {
-        sessionKey = `system:${payload.sub}`;
-      } else {
-        sessionKey = `${payload.sub}`;
-      }
+      const sessionKey = `${payload.tenantId}:${payload.sub}:${payload.level}`;
+      const session = await this.redisService.getSession(sessionKey);
       
-      let session;
-      try {
-        session = await this.redisService.getSession(sessionKey);
-      } catch (error) {
-        this.logger.warn(`Failed to get session from Redis: ${error.message}. Proceeding without session validation.`);
-        // Continue without session validation as a fallback
+      if (!session) {
+        throw new UnauthorizedException('Session không tồn tại hoặc đã hết hạn');
       }
       
       // Create new access token
@@ -651,59 +635,6 @@ export class AuthService {
     } catch (error) {
       this.logger.error(`Error flattening permissions: ${error.message}`);
       return [];
-    }
-  }
-
-  /**
-   * Đổi mật khẩu người dùng
-   */
-  async changePassword(tenantId: string | number, userId: string | number, currentPassword: string, newPassword: string): Promise<void> {
-    try {
-      this.logger.debug(`Password change attempt for user ${userId} in tenant ${tenantId}`);
-      
-      // Chuyển đổi kiểu dữ liệu nếu cần
-      const numericUserId = typeof userId === 'string' ? parseInt(userId, 10) : userId;
-      
-      // Gọi userService để thay đổi mật khẩu
-      await this.userService.changePassword(numericUserId, currentPassword, newPassword);
-      
-      try {
-        // Ghi log thay đổi mật khẩu
-        await this.activityLogService.create({
-          tenant_id: String(tenantId),
-          user_id: String(userId),
-          action: 'change_password',
-          entity: 'user',
-          entity_id: String(userId),
-          details: {
-            timestamp: new Date(),
-          }
-        });
-      } catch (logError) {
-        // Nếu ghi log thất bại, chỉ ghi lại lỗi và tiếp tục
-        this.logger.error(`Failed to log password change: ${logError.message}`);
-      }
-    } catch (error) {
-      this.logger.error(`Password change error: ${error.message}`);
-      throw error;
-    }
-  }
-  
-  /**
-   * Ghi log hoạt động
-   */
-  async logActivity(tenantId: string | number, userId: string | number, action: string, entity: string, entityId?: string, details?: any): Promise<void> {
-    try {
-      await this.activityLogService.create({
-        tenant_id: String(tenantId),
-        user_id: String(userId),
-        action,
-        entity,
-        entity_id: entityId,
-        details
-      });
-    } catch (error) {
-      this.logger.error(`Activity logging error: ${error.message}`);
     }
   }
 }

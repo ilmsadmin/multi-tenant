@@ -26,8 +26,18 @@ export class SystemLogService {
   async findSystemLogs(): Promise<SystemLogDocument[]> {
     return this.systemLogModel.find({ tenant_id: null }).sort({ timestamp: -1 }).exec();
   }
-
   async findAll(): Promise<SystemLogDocument[]> {
     return this.systemLogModel.find().sort({ timestamp: -1 }).exec();
+  }
+  
+  // Bổ sung phương thức log để tương thích với AuthService
+  async log(logData: any): Promise<SystemLogDocument> {
+    return this.create({
+      action: logData.action,
+      user_id: logData.user_id,
+      details: logData.details,
+      timestamp: new Date(),
+      tenant_id: logData.tenant_id || null
+    });
   }
 }

@@ -233,4 +233,134 @@ export class UserService {
     const salt = await bcrypt.genSalt(10);
     return bcrypt.hash(password, salt);
   }
+
+  async findSystemUser(id: string): Promise<any> {
+    // Đây là phương thức để tìm người dùng cấp hệ thống
+    // Trong môi trường thực tế, bạn sẽ truy vấn từ bảng system_users
+    this.logger.debug(`Finding system user with id: ${id}`);
+    
+    try {
+      // Sử dụng dataSource để truy vấn trực tiếp từ bảng system_users
+      const systemUser = await this.dataSource.query(
+        `SELECT id, username, email, role, status FROM system_db.system_users WHERE id = $1`,
+        [id]
+      );
+      
+      if (systemUser && systemUser.length > 0) {
+        // Thêm quyền mặc định dựa vào role
+        const permissions = this.getSystemPermissions(systemUser[0].role);
+        return {
+          ...systemUser[0],
+          permissions
+        };
+      }
+      
+      return null;
+    } catch (error) {
+      this.logger.error(`Error finding system user: ${error.message}`);
+      return null;
+    }
+  }
+
+  async findTenantAdmin(tenantId: string, userId: number): Promise<any> {
+    this.logger.debug(`Finding tenant admin for tenant ${tenantId}, user ${userId}`);
+    
+    try {
+      // Lấy user và kiểm tra xem user có phải là admin của tenant không
+      const user = await this.userRepository.findOne({
+        where: { id: userId },
+        relations: ['roles']
+      });
+      
+      if (!user) {
+        return null;
+      }
+      
+      // Kiểm tra xem user có vai trò admin không
+      const isAdmin = user.roles.some(role => 
+        role.name === 'tenant_admin' || role.name === 'admin'
+      );
+      
+      if (!isAdmin) {
+        return null;
+      }
+      
+      // Lấy thông tin tenant để đảm bảo user thuộc tenant này
+      const tenantCheck = await this.dataSource.query(
+        `SELECT tenant_id FROM tenant_users WHERE user_id = $1 AND tenant_id = $2`,
+        [userId, tenantId]
+      );
+      
+      if (tenantCheck && tenantCheck.length > 0) {
+        // Trích xuất permissions từ roles
+        const permissions: string[] = [];
+        user.roles.forEach(role => {
+          if (role.permissions) {
+            const extractedPermissions = this.extractPermissions(role.permissions);
+            extractedPermissions.forEach(p => permissions.push(p));
+          }
+        });
+        
+        return {
+          ...user,
+          permissions,
+          role: 'tenant_admin'
+        };
+      }
+      
+      return null;
+    } catch (error) {
+      this.logger.error(`Error finding tenant admin: ${error.message}`);
+      return null;
+    }
+  }
+  
+  private getSystemPermissions(role: string): string[] {
+    // Define permissions for system roles
+    const rolePermissions: Record<string, string[]> = {
+      system_admin: [
+        'tenant:create', 'tenant:read', 'tenant:update', 'tenant:delete',
+        'package:create', 'package:read', 'package:update', 'package:delete',
+        'module:create', 'module:read', 'module:update', 'module:delete',
+        'system_user:create', 'system_user:read', 'system_user:update', 'system_user:delete'
+      ],
+      system_manager: [
+        'tenant:read', 'tenant:update',
+        'package:read',
+        'module:read',
+        'system_user:read'
+      ]
+    };
+    
+    return rolePermissions[role] || [];
+  }
+  
+  private extractPermissions(permissionsObject: any): string[] {
+    if (!permissionsObject) return [];
+    
+    const permissions: string[] = [];
+    // Xử lý đối tượng permissions từ JSON
+    // Format: { "module1": ["read", "write"], "module2": ["read"] }
+    for (const [module, actions] of Object.entries(permissionsObject)) {
+      if (Array.isArray(actions)) {
+        const modulePermissions = actions.map(action => `${module}:${action}`);
+        modulePermissions.forEach(p => permissions.push(p));
+      }
+    }
+    
+    return permissions;
+  }
+  /**
+   * Cập nhật thời gian đăng nhập cuối
+   */
+  async updateLastLogin(id: number, updateData: { lastLoginAt: Date }): Promise<void> {
+    const user = await this.userRepository.findOne({ where: { id } });
+    
+    if (!user) {
+      throw new NotFoundException(`User với ID ${id} không tồn tại`);
+    }
+    
+    user.lastLogin = updateData.lastLoginAt;
+    await this.userRepository.save(user);
+  }
 }

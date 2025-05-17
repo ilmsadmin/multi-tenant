@@ -26,11 +26,15 @@ export class CreateActivityLogDto {
   @IsOptional()
   @IsString()
   entity_id?: string;
-
   @ApiProperty({ description: 'Chi tiết về hành động' })
   @IsObject()
   @IsNotEmpty()
   details: Record<string, any>;
+  
+  @ApiPropertyOptional({ description: 'Thay đổi dữ liệu' })
+  @IsOptional()
+  @IsObject()
+  changes?: Record<string, any>;
 
   @ApiPropertyOptional({ description: 'Địa chỉ IP của người dùng' })
   @IsOptional()

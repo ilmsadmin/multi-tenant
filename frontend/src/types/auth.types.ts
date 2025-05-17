@@ -3,6 +3,7 @@ export interface User {
   username: string;
   email: string;
   role: string;
+  tenantId?: number;  // Add tenantId property
   status: 'active' | 'inactive';
   created_at: string;
   updated_at: string;

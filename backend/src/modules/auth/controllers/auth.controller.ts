@@ -76,8 +76,7 @@ export class AuthController {
       roles: req.user.roles,
       permissions: req.user.permissions,
     };
-  }
-  @Post('logout')
+  }  @Post('logout')
   @UseGuards(JwtAuthGuard)
   @ApiBearerAuth()
   @HttpCode(HttpStatus.OK)
@@ -94,24 +93,21 @@ export class AuthController {
     
     try {
       // Gọi service để đăng xuất
-      await this.authService.logout(req.user.tenantId, req.user.userId);
-      
-      // Ghi log hoạt động
-      await this.authService.activityLogService.create({
-        tenant_id: req.user.tenantId.toString(),
-        user_id: req.user.userId.toString(),
-        action: 'logout',
-        entity: 'auth',
-        details: {
+      await this.authService.logout(req.user.userId, req.user.level, req.user.tenantId);
+        // Ghi log hoạt động
+      await this.authService.logActivity(
+        req.user.tenantId,
+        req.user.userId,
+        'logout',
+        'auth',
+        undefined,
+        { 
           username: req.user.username,
           timestamp: new Date(),
           ip_address: req.ip || req.connection.remoteAddress || 'unknown',
-          user_agent: req.headers['user-agent'] || 'unknown',
-        },
-        ip_address: req.ip || req.connection.remoteAddress || 'unknown',
-        user_agent: req.headers['user-agent'] || 'unknown',
-        timestamp: new Date(),
-      });
+          user_agent: req.headers['user-agent'] || 'unknown'
+        }
+      );
       
       return { message: 'Đăng xuất thành công' };
     } catch (error) {
@@ -119,7 +115,6 @@ export class AuthController {
       throw error;
     }
   }
-
   @Post('refresh-token')
   @HttpCode(HttpStatus.OK)
   @ApiOperation({ summary: 'Làm mới token' })
@@ -127,7 +122,8 @@ export class AuthController {
   @ApiResponse({ status: 200, description: 'Token đã được làm mới' })
   @ApiResponse({ status: 401, description: 'Token không hợp lệ' })
   async refreshToken(@Body() refreshTokenDto: RefreshTokenDto) {
-    return this.authService.refreshToken(refreshTokenDto.token);
+    // Mặc định là level 'user' nếu không có thông tin khác
+    return this.authService.refreshToken(refreshTokenDto.token, 'user');
   }
 
   @Post('change-password')

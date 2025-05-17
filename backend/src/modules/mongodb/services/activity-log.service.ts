@@ -78,7 +78,6 @@ export class ActivityLogService {
     
     return this.activityLogModel.find(filter).sort({ timestamp: -1 }).exec();
   }
-
   async findByDateRange(startDate: Date, endDate: Date): Promise<ActivityLogDocument[]> {
     return this.activityLogModel.find({
       timestamp: {
@@ -86,5 +85,18 @@ export class ActivityLogService {
         $lte: endDate,
       },
     }).sort({ timestamp: -1 }).exec();
+  }
+    // Bổ sung phương thức log để tương thích với AuthService
+  async log(logData: any): Promise<ActivityLogDocument> {
+    return this.create({
+      action: logData.action,
+      user_id: logData.user_id,
+      tenant_id: logData.tenant_id || null,
+      entity: logData.entity || 'general',
+      entity_id: logData.entity_id,
+      details: logData.details || {},
+      changes: logData.changes || {},
+      timestamp: new Date()
+    });
   }
 }

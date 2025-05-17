@@ -11,13 +11,17 @@ const api = axios.create({
   ...corsConfig
 });
 
-// Thêm interceptor để xử lý token trong mỗi request
+// Thêm interceptor để xử lý token và tenant ID trong mỗi request
 api.interceptors.request.use(
   (config) => {
     const token = localStorage.getItem('token');
     if (token) {
       config.headers.Authorization = `Bearer ${token}`;
     }
+    
+    // Thêm tenant ID vào header cho mọi request
+    config.headers['x-tenant-id'] = localStorage.getItem('tenant_id') || '1';
+    
     return config;
   },
   (error) => {

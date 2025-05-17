@@ -6,10 +6,10 @@ export const authService = {
     const response = await api.post<LoginResponse>('/auth/login', credentials);
     return response.data;
   },
-
   logout: async (): Promise<void> => {
     localStorage.removeItem('token');
     localStorage.removeItem('user');
+    localStorage.removeItem('tenant_id');
   },
 
   getCurrentUser: async (): Promise<any> => {

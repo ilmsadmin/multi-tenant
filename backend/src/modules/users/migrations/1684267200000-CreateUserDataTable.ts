@@ -87,12 +87,14 @@ export class CreateUserDataTable1684267200000 implements MigrationInterface {
     await queryRunner.query(`DROP INDEX IF EXISTS "IDX_USER_DATA_USER_CATEGORY_KEY"`);
     await queryRunner.query(`DROP INDEX IF EXISTS "IDX_USER_DATA_KEY"`);
     await queryRunner.query(`DROP INDEX IF EXISTS "IDX_USER_DATA_CATEGORY"`);
-    await queryRunner.query(`DROP INDEX IF EXISTS "IDX_USER_DATA_USER_ID"`);
-
-    // Xóa foreign key và bảng
+    await queryRunner.query(`DROP INDEX IF EXISTS "IDX_USER_DATA_USER_ID"`);    // Xóa foreign key và bảng
     const table = await queryRunner.getTable('user_data');
-    const foreignKey = table.foreignKeys.find(fk => fk.columnNames.indexOf('user_id') !== -1);
-    await queryRunner.dropForeignKey('user_data', foreignKey);
+    if (table) {
+      const foreignKey = table.foreignKeys.find(fk => fk.columnNames.indexOf('user_id') !== -1);
+      if (foreignKey) {
+        await queryRunner.dropForeignKey('user_data', foreignKey);
+      }
+    }
     await queryRunner.dropTable('user_data');
   }
 }

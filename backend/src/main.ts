@@ -46,13 +46,24 @@ async function bootstrap() {
     new RolesGuard(reflector),
     new PermissionsGuard(reflector)
   );
-
   // Get port from configuration
   const configService = app.get(ConfigService);
   const port = configService.get('PORT') || 3000;
   
-  await app.listen(port);
-  console.log(`Application is running on: http://localhost:${port}`);
-  console.log(`Swagger documentation available at: http://localhost:${port}/api/docs`);
+  try {
+    await app.listen(port);
+    Logger.log(`Application is running on: http://localhost:${port}`);
+    Logger.log(`Swagger documentation available at: http://localhost:${port}/api/docs`);
+  } catch (error) {
+    if (error.code === 'EADDRINUSE') {
+      const alternativePort = 3001;
+      Logger.warn(`Port ${port} is already in use, trying alternative port ${alternativePort}`);
+      await app.listen(alternativePort);
+      Logger.log(`Application is running on: http://localhost:${alternativePort}`);
+      Logger.log(`Swagger documentation available at: http://localhost:${alternativePort}/api/docs`);
+    } else {
+      throw error;
+    }
+  }
 }
 bootstrap();

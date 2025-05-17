@@ -11,6 +11,15 @@ export const login = createAsyncThunk(
       // Lưu token vào localStorage
       localStorage.setItem('token', response.access_token);
       localStorage.setItem('user', JSON.stringify(response.user));
+      
+      // Ensure tenant ID is always set in localStorage
+      if (response.user && response.user.tenantId) {
+        localStorage.setItem('tenant_id', response.user.tenantId.toString());
+      } else if (!localStorage.getItem('tenant_id')) {
+        // Default tenant ID if not available in response
+        localStorage.setItem('tenant_id', '1');
+      }
+      
       return response;
     } catch (error: any) {
       return rejectWithValue(error.response?.data?.message || 'Login failed');
